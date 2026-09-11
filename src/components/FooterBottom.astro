@@ -1,0 +1,195 @@
+---
+const navLinks = [
+  { label: "Home", href: "#hero" },
+  { label: "Tournaments", href: "#tournaments" },
+  { label: "Training", href: "#training" },
+  { label: "Community", href: "#events" },
+  { label: "Gallery", href: "#gallery" },
+  { label: "Blog", href: "#journal" },
+];
+
+const year = new Date().getFullYear();
+---
+
+<footer class="footer-bottom">
+  <div class="container footer-bottom-inner">
+    <div class="footer-bottom-row">
+      <p class="footer-logo display">Alicante<br />Paddle</p>
+
+      <nav class="footer-nav" aria-label="Footer">
+        {/* Column-major on mobile (Home/Tournaments/Training, then
+            Community/Gallery/Blog), one row on desktop. */}
+        <ul class="footer-nav-list">
+          {navLinks.map((link) => (
+            <li>
+              <a class="footer-nav-link" href={link.href}>
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <a
+        class="footer-social"
+        href="https://instagram.com/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <span class="social-icon" aria-hidden="true"></span>
+        <span>Instagram</span>
+      </a>
+    </div>
+
+    <hr class="footer-divider" />
+
+    <p class="footer-copyright">&copy; {year} Alicante Paddle. All rights reserved.</p>
+  </div>
+</footer>
+
+<style>
+  .footer-bottom {
+    background: var(--c-black);
+    color: var(--c-white);
+    padding-block: var(--s-32);
+  }
+
+  .footer-bottom-inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-24);
+  }
+
+  .footer-bottom-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-32);
+  }
+
+  /* No negative tracking here, unlike the global .display */
+  .footer-logo {
+    font-size: 1.25rem; /* 20 */
+    line-height: 1.1;
+    letter-spacing: 0;
+  }
+
+  /* line-height:normal on the list, not just the links: the <li> boxes
+     otherwise inherit the body's 1.5 and add 7px to every row, which the
+     12px gap then compounds. */
+  .footer-nav-list {
+    display: flex;
+    line-height: normal;
+    gap: var(--s-24);
+  }
+
+  .footer-nav-link {
+    font-size: 1rem; /* 16 */
+    line-height: normal;
+    transition: color 0.2s var(--ease-out);
+  }
+
+  .footer-nav-link:hover {
+    color: var(--c-lime);
+  }
+
+  .footer-social {
+    display: flex;
+    align-items: center;
+    gap: var(--s-8);
+    font-size: 1rem; /* 16 */
+    line-height: normal;
+    transition: color 0.2s var(--ease-out);
+  }
+
+  .footer-social:hover {
+    color: var(--c-lime);
+  }
+
+  /* Drawn in CSS rather than as an SVG: Figma uses a slightly different box
+     radius and dot size at each breakpoint, which one scaled viewBox cannot
+     express. Border-box sizing keeps the 1.5 stroke inside the 28/24 square,
+     matching Figma's INSIDE stroke alignment. */
+  .social-icon {
+    display: grid;
+    width: 1.5rem; /* 24 */
+    height: 1.5rem;
+    flex: none;
+    place-items: center;
+    border: 1.5px solid currentColor;
+    border-radius: 6px;
+  }
+
+  .social-icon::after {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+    content: "";
+  }
+
+  .footer-divider {
+    width: 100%;
+    height: 1px;
+    border: 0;
+    margin: 0;
+    background: #404040;
+  }
+
+  .footer-copyright {
+    color: #8c8c8c;
+    font-size: 0.8125rem; /* 13 */
+    line-height: normal;
+  }
+
+  @media screen and (max-width: 1023px) {
+    .footer-bottom {
+      padding-block: var(--s-40) var(--s-32);
+    }
+
+    .footer-bottom-inner,
+    .footer-bottom-row {
+      flex-direction: column;
+      gap: var(--s-32);
+    }
+
+    .footer-bottom-row {
+      align-items: flex-start;
+      justify-content: flex-start;
+    }
+
+    .footer-logo {
+      font-size: 2rem; /* 32 */
+      line-height: 0.96;
+    }
+
+    .footer-nav {
+      width: 100%;
+    }
+
+    /* Column-major so the order reads Home/Tournaments/Training, then
+       Community/Gallery/Blog — matching the Figma mobile frame. */
+    .footer-nav-list {
+      display: grid;
+      grid-auto-flow: column;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: repeat(3, auto);
+      gap: var(--s-12) var(--s-24);
+    }
+
+    .footer-social {
+      gap: var(--s-12);
+    }
+
+    .social-icon {
+      width: 1.75rem; /* 28 */
+      height: 1.75rem;
+      border-radius: 8px;
+    }
+
+    .social-icon::after {
+      width: 6px;
+      height: 6px;
+    }
+  }
+</style>

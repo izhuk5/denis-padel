@@ -1,0 +1,280 @@
+---
+import { Image } from "astro:assets";
+import gallery1 from "../assets/images/gallery-1.png";
+import gallery2 from "../assets/images/gallery-2.png";
+import gallery3 from "../assets/images/gallery-3.png";
+
+/* Figma draws the two arrows as explicit vector paths rather than mirroring
+   one — the head sits on the opposite end, so they are not symmetrical. */
+const prevPaths = ["M 0 8 L 6 16", "M 16 8 L 0 8 L 6 0"];
+const nextPaths = ["M 16 8 L 10 16", "M 0 8 L 16 8 L 10 0"];
+
+const photos = [
+  { src: gallery1, alt: "Player driving a backhand during a match at the Alicante Paddle court" },
+  { src: gallery2, alt: "Player returning a shot on the blue court under palm trees" },
+  { src: gallery3, alt: "Four players shaking hands over the net after a match" },
+];
+
+/* Figma only supplies three photos, which is exactly what fits in the desktop
+   row — leaving nothing to page through and locking the arrows. Running the
+   set twice gives the carousel something to move. Repeats are never adjacent
+   in a single view, and the duplicates are hidden from assistive tech.
+   Drop the second pass as soon as there are six real photos. */
+const slides = [...photos, ...photos].map((photo, i) => ({
+  ...photo,
+  duplicate: i >= photos.length,
+}));
+---
+
+<section class="gallery" id="gallery">
+  <div class="container gallery-header">
+    <p class="eyebrow gallery-label" data-gallery-reveal>Gallery</p>
+
+    <h2 class="gallery-heading display">
+      <span class="line-mask"><span class="line-inner" data-gallery-line>This is</span></span>
+      <span class="line-mask"><span class="line-inner" data-gallery-line>Alicante Paddle.</span></span>
+    </h2>
+
+    <p class="gallery-intro" data-gallery-reveal>
+      Tournaments. Training. Competition. New friendships. And plenty of moments worth
+      remembering. See what happens on and off the court.
+    </p>
+  </div>
+
+  <!-- The gutter lives on this wrapper, not on .swiper: Swiper measures the
+       container with clientWidth, which counts padding, so padding there
+       would inflate every computed slide width. -->
+  <div class="container gallery-carousel">
+    <div class="swiper gallery-swiper" data-gallery-swiper>
+      <div class="swiper-wrapper">
+        {
+          slides.map((slide) => (
+            <figure class="swiper-slide gallery-slide" aria-hidden={slide.duplicate ? "true" : undefined}>
+              <Image
+                src={slide.src}
+                alt={slide.duplicate ? "" : slide.alt}
+                widths={[342, 421, 842]}
+                sizes="(max-width: 767px) calc(100vw - 3rem), (max-width: 1023px) 50vw, 421px"
+                format="avif"
+                class="gallery-slide-img"
+              />
+            </figure>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="gallery-nav" data-gallery-reveal>
+    <button class="gallery-arrow" type="button" data-gallery-prev aria-label="Previous photo">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        {prevPaths.map((d) => <path d={d} />)}
+      </svg>
+    </button>
+
+    <button class="gallery-arrow" type="button" data-gallery-next aria-label="Next photo">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        {nextPaths.map((d) => <path d={d} />)}
+      </svg>
+    </button>
+  </div>
+</section>
+
+<style>
+  .gallery {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-48);
+    background: var(--c-white);
+    padding-block: var(--s-section);
+  }
+
+  .gallery-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-16);
+    text-align: center;
+  }
+
+  /* Flat 14 with no tracking, unlike the global .eyebrow's fluid 12->14 at
+     0.14em — same treatment as the founder section's label. */
+  .gallery-label {
+    color: var(--c-blue);
+    font-size: var(--t-small); /* 14 */
+    letter-spacing: 0;
+  }
+
+  /* letter-spacing:0 overrides the global .display -0.02em; Figma sets this
+     heading at zero tracking, and the negative value changes where the
+     second line wraps on mobile. */
+  .gallery-heading {
+    font-size: 5.5rem; /* 88 */
+    line-height: 0.96;
+    letter-spacing: 0;
+  }
+
+  /* Each mask wraps one authored line. The second one holds two rendered
+     lines on mobile, which reveal together — that is fine, the mask only
+     needs to clip whatever its own line box produces. */
+  .line-mask {
+    display: block;
+    overflow: hidden;
+  }
+
+  /* block, not inline-block: an inline-block picks up the line box's leading
+     and makes each masked line a few px taller than the design. */
+  .line-inner {
+    display: block;
+  }
+
+  .gallery-intro {
+    max-width: 43.75rem; /* 700 */
+    margin-inline: auto;
+    color: var(--c-black);
+    font-size: 1.125rem; /* 18 */
+    line-height: 1.5;
+  }
+
+  /* --- Carousel ---
+     Swiper sets each slide's width inline from slidesPerView; the only thing
+     left here is the frame the photo is cropped into. */
+  .gallery-slide {
+    aspect-ratio: 421 / 316;
+    overflow: hidden;
+  }
+
+  .gallery-slide-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .gallery-nav {
+    display: flex;
+    justify-content: center;
+    gap: var(--s-32);
+  }
+
+  .gallery-arrow {
+    display: grid;
+    width: 3rem; /* 48 */
+    height: 3rem;
+    place-items: center;
+    border: 1px solid var(--c-black);
+    border-radius: var(--radius-pill);
+    background: var(--c-white);
+    color: var(--c-black);
+    cursor: pointer;
+    transition:
+      transform 0.25s var(--ease-out),
+      opacity 0.25s var(--ease-out);
+  }
+
+  .gallery-arrow svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .gallery-arrow:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  /* Swiper toggles the button's disabled attribute at the ends and when all
+     slides already fit. The arrows stay in the layout either way — Figma
+     shows them at 1440, where the three photos leave nothing to page. */
+  .gallery-arrow:disabled {
+    cursor: default;
+    opacity: 0.3;
+  }
+
+  @media screen and (max-width: 1023px) {
+    .gallery {
+      gap: var(--s-32);
+    }
+
+    .gallery-header {
+      gap: var(--s-12);
+    }
+
+    .gallery-heading {
+      font-size: 2.875rem; /* 46 */
+    }
+
+    .gallery-intro {
+      font-size: var(--t-body);
+    }
+  }
+
+  @media screen and (max-width: 767px) {
+    .gallery-slide {
+      aspect-ratio: 342 / 300;
+    }
+  }
+</style>
+
+<script>
+  // @ts-nocheck — project is plain JS
+  import Swiper from "swiper";
+  import { Navigation, Keyboard } from "swiper/modules";
+  import "swiper/css";
+
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const section = document.querySelector(".gallery");
+
+  new Swiper(section.querySelector("[data-gallery-swiper]"), {
+    modules: [Navigation, Keyboard],
+    slidesPerView: 1,
+    spaceBetween: 16,
+    // Figma's 421 slide at 1440 is exactly (1312 - 2 gaps) / 3. Two across in
+    // between, because three at 768 would leave each one ~215 wide.
+    // Swiper's breakpoints are min-width, so these are the mobile-first
+    // mirrors of the CSS max-width tiers: 767 -> 1 up, 1023 -> 2 up.
+    breakpoints: {
+      768: { slidesPerView: 2, spaceBetween: 24 },
+      1024: { slidesPerView: 3, spaceBetween: 24 },
+    },
+    navigation: {
+      prevEl: section.querySelector("[data-gallery-prev]"),
+      nextEl: section.querySelector("[data-gallery-next]"),
+    },
+    keyboard: { enabled: true, onlyInViewport: true },
+    loop: true,
+    watchOverflow: true,
+  });
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!reduceMotion) {
+    gsap.from(section.querySelectorAll("[data-gallery-line]"), {
+      yPercent: 115,
+      duration: 0.9,
+      stagger: 0.08,
+      ease: "power3.out",
+      scrollTrigger: { trigger: section, start: "top 80%" },
+    });
+
+    gsap.from(section.querySelectorAll("[data-gallery-reveal]"), {
+      y: 24,
+      opacity: 0,
+      duration: 0.7,
+      stagger: 0.1,
+      ease: "power3.out",
+      scrollTrigger: { trigger: section, start: "top 75%" },
+    });
+
+    // opacity only, no transform: Swiper drives .swiper-wrapper's transform
+    // and reads slide offsets from layout, so writing transforms onto the
+    // slides themselves risks fighting it mid-drag.
+    gsap.from(section.querySelectorAll(".gallery-slide"), {
+      opacity: 0,
+      duration: 0.7,
+      stagger: 0.1,
+      ease: "power3.out",
+      scrollTrigger: { trigger: section.querySelector(".gallery-carousel"), start: "top 85%" },
+    });
+  }
+</script>

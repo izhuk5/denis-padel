@@ -1,0 +1,408 @@
+---
+import { Image } from "astro:assets";
+import eventImg from "../assets/images/event-sunset.png";
+
+const arrowPath = "M0 8h16M16 8l-6-8M16 8l-6 8";
+
+const event = {
+  day: "28",
+  month: "Sep",
+  city: "Alicante",
+  title: "Sunset padel social",
+  description:
+    "An evening of relaxed matches, music and time together with the Alicante Paddle community.",
+};
+---
+
+<section class="events" id="events">
+  <div class="container events-inner">
+    <div class="events-header">
+      <p class="eyebrow events-label" data-events-reveal>Events</p>
+
+      <h2 class="events-heading display">
+        <span class="line-mask"><span class="line-inner" data-events-line>More than</span></span>
+        <span class="line-mask"><span class="line-inner" data-events-line>just matches.</span></span>
+      </h2>
+
+      <div class="events-paragraphs" data-events-reveal>
+        <p>The community doesn't stop when the match ends.</p>
+        <p>
+          From special tournaments to social meetups and community events, there's always
+          another reason to get together.
+        </p>
+      </div>
+    </div>
+
+    <article class="event-card" data-events-reveal>
+      <div class="event-badge">
+        <p class="event-badge-label">Next event</p>
+        <p class="event-badge-date">
+          <span class="event-badge-day display">{event.day}</span>
+          <span class="event-badge-month display">{event.month}</span>
+        </p>
+        <p class="event-badge-city">{event.city}</p>
+      </div>
+
+      <div class="event-photo">
+        <Image
+          src={eventImg}
+          alt="Padel players sitting courtside at sunset after a social match"
+          widths={[720, 1224]}
+          sizes="(max-width: 1023px) 100vw, 43vw"
+          format="avif"
+          class="event-photo-img"
+        />
+      </div>
+
+      <div class="event-details">
+        <p class="eyebrow event-eyebrow">Featured event</p>
+        <h3 class="event-title display">{event.title}</h3>
+        <p class="event-meta">{event.day} {event.month} · {event.city}</p>
+        <p class="event-description">{event.description}</p>
+
+        <a class="btn-outline" href="#contact">
+          <span>View event</span>
+          <span class="btn-outline-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d={arrowPath}></path>
+            </svg>
+          </span>
+        </a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<style>
+  .events {
+    background: var(--c-white);
+    padding-block: var(--s-section);
+  }
+
+  .events-inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-48);
+  }
+
+  .events-header {
+    display: flex;
+    max-width: 40rem; /* 640 */
+    flex-direction: column;
+    align-items: center;
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .events-label {
+    color: var(--c-blue);
+    font-size: var(--t-small); /* 14 at every width */
+  }
+
+  .events-heading {
+    margin-top: var(--s-16);
+    font-size: 5.5rem; /* 88 */
+  }
+
+  /* No padding/negative-margin trick here: the negative margins on adjacent
+     masks collapse into one, which left each line ~4px taller than the
+     design. All-caps copy has no descenders to clip anyway. */
+  .line-mask {
+    display: block;
+    overflow: hidden;
+  }
+
+  /* block, not inline-block: an inline-block picks up the line box's
+     leading and makes each masked line ~4px taller than the design */
+  .line-inner {
+    display: block;
+  }
+
+  .events-paragraphs {
+    display: flex;
+    margin-top: var(--s-16);
+    flex-direction: column;
+    gap: var(--s-8);
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  /* --- Card ---
+     The blue frame is an overlay, not a border: Figma draws the stroke
+     inside the card, on top of the badge and photo, without shrinking the
+     content box. An inset shadow would paint under those children. */
+  .event-card {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    background: var(--c-white);
+  }
+
+  .event-card::after {
+    position: absolute;
+    z-index: 1;
+    border: 10px solid var(--c-blue);
+    content: "";
+    inset: 0;
+    pointer-events: none;
+  }
+
+  /* --- Date badge ---
+     Mobile is a bar: the date on the left, label and city stacked to the
+     right of it. Desktop turns it into a tall column instead. */
+  .event-badge {
+    display: flex;
+    width: 18.29%; /* 240/1312 */
+    flex: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4) var(--s-12);
+    padding: var(--s-32) var(--s-24);
+    background: var(--c-lime);
+    color: var(--c-black);
+    text-align: center;
+  }
+
+  .event-badge-date {
+    display: flex;
+    grid-area: date;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    text-transform: uppercase;
+  }
+
+  .event-badge-day {
+    font-size: 10rem; /* 160 */
+    line-height: 0.88;
+  }
+
+  .event-badge-month {
+    font-size: 3.5rem; /* 56 */
+    line-height: 1;
+  }
+
+  .event-badge-label,
+  .event-badge-city {
+    font-size: var(--t-label);
+    font-weight: 600;
+    line-height: normal;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .event-badge-label {
+    grid-area: label;
+  }
+
+  .event-badge-city {
+    grid-area: city;
+  }
+
+  .event-photo {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .event-photo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .event-details {
+    width: 35.06%; /* 460/1312 */
+    flex: none;
+    padding: var(--s-40);
+    color: var(--c-black);
+  }
+
+  .event-eyebrow {
+    color: var(--c-blue);
+    font-size: var(--t-small); /* 14 */
+    letter-spacing: 0.08em;
+  }
+
+  .event-title {
+    margin-top: var(--s-8);
+    font-size: 2.75rem; /* 44 */
+    line-height: 0.96;
+  }
+
+  .event-meta {
+    margin-top: var(--s-12);
+    color: var(--c-blue);
+    font-size: 1.25rem; /* 20 */
+    font-weight: 700;
+    line-height: normal;
+  }
+
+  .event-description {
+    margin-top: var(--s-16);
+    font-size: var(--t-body); /* 18 -> 17 -> 16 */
+    line-height: 1.5;
+  }
+
+  /* .btn-outline itself is global (tokens.css); only its offset from the
+     description above it belongs to this card. */
+  .event-details .btn-outline {
+    margin-top: var(--s-32);
+    gap: 0.875rem; /* 14 */
+    font-size: 1.125rem; /* 18 */
+  }
+
+  /* --- Tablet and below: the card stacks and the badge becomes a bar ---
+     Date on the left, label and city stacked to its right. */
+  @media screen and (max-width: 1023px) {
+    .events-inner {
+      gap: var(--s-32);
+    }
+
+    .events-heading {
+      margin-top: var(--s-12);
+      font-size: 2.875rem; /* 46 */
+    }
+
+    .events-paragraphs {
+      margin-top: var(--s-24);
+      gap: var(--s-16);
+    }
+
+    .event-card {
+      flex-direction: column;
+    }
+
+    .event-card::after {
+      border-width: 8px;
+    }
+
+    .event-badge {
+      display: grid;
+      width: auto;
+      grid-template-areas:
+        "date label"
+        "date city";
+      grid-template-columns: auto 1fr;
+      align-content: center;
+      padding: var(--s-20);
+      text-align: left;
+    }
+
+    .event-badge-date {
+      flex-direction: row;
+      align-items: baseline;
+      gap: 0.25em;
+      font-size: 2.5rem; /* 40 */
+      line-height: 0.9;
+    }
+
+    .event-badge-day,
+    .event-badge-month {
+      font-size: inherit;
+      line-height: inherit;
+    }
+
+    .event-badge-label,
+    .event-badge-city {
+      justify-self: end;
+      letter-spacing: 0.02em;
+    }
+
+    .event-badge-label {
+      align-self: end;
+    }
+
+    .event-badge-city {
+      align-self: start;
+    }
+
+    .event-photo {
+      flex: initial;
+      aspect-ratio: 342 / 260;
+    }
+
+    .event-details {
+      width: auto;
+      flex: initial;
+      padding: var(--s-24) var(--s-20);
+    }
+
+    .event-eyebrow {
+      letter-spacing: 0.04em;
+    }
+
+    .event-title {
+      font-size: 2.5rem; /* 40 */
+    }
+
+    .event-meta {
+      font-size: 1.125rem; /* 18 */
+    }
+
+    .event-details .btn-outline {
+      margin-top: var(--s-24);
+      gap: var(--s-12);
+      font-size: 1rem; /* 16 */
+    }
+  }
+
+  /* The stacked card is built for a phone. Stretched to 1023 the badge bar
+     throws its date and labels to opposite edges, the 342/260 photo renders
+     ~700 tall, and the pill runs the full card width. */
+  @media screen and (min-width: 768px) and (max-width: 1023px) {
+    .event-badge {
+      grid-template-columns: auto auto 1fr;
+      column-gap: var(--s-20);
+    }
+
+    .event-badge-label,
+    .event-badge-city {
+      justify-self: start;
+    }
+
+    .event-photo {
+      aspect-ratio: 16 / 9;
+    }
+
+    .event-details {
+      padding: var(--s-32);
+    }
+
+    .event-details .btn-outline {
+      width: fit-content;
+    }
+  }
+
+</style>
+
+<script>
+  // @ts-nocheck — project is plain JS
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!reduceMotion) {
+    const section = document.querySelector(".events");
+
+    gsap.from(section.querySelectorAll("[data-events-line]"), {
+      yPercent: 115,
+      duration: 0.9,
+      stagger: 0.08,
+      ease: "power3.out",
+      scrollTrigger: { trigger: section, start: "top 80%" },
+    });
+
+    gsap.from(section.querySelectorAll("[data-events-reveal]"), {
+      y: 24,
+      opacity: 0,
+      duration: 0.7,
+      stagger: 0.1,
+      ease: "power3.out",
+      scrollTrigger: { trigger: section, start: "top 75%" },
+    });
+  }
+</script>

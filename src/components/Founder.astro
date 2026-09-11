@@ -1,0 +1,349 @@
+---
+import { Image } from "astro:assets";
+import founderImg from "../assets/images/founder-denis.png";
+
+const arrowPath = "M0 8h16M16 8l-6-8M16 8l-6 8";
+
+/* Three short beats: who / coach / invitation. Kept as a flat list so each
+   paragraph stays scannable — the old pair-merge made desktop a wall of text. */
+const paragraphs = [
+  "Denis founded Alicante Paddle to make it easy to find a game — and the right people to play it with.",
+  "As a coach, he helps players improve their technique and become more confident on court.",
+  "Weekly tournaments, training sessions and community events. Come play.",
+];
+---
+
+<section class="founder" id="founder">
+  <div class="container founder-inner">
+    <div class="founder-photo" data-founder-reveal>
+      <Image
+        src={founderImg}
+        alt="Denis, founder and coach of Alicante Paddle, smiling courtside"
+        widths={[560, 840, 1122]}
+        sizes="(max-width: 1023px) 100vw, 39vw"
+        format="avif"
+        class="founder-photo-img"
+      />
+
+      <div class="founder-photo-caption">
+        <p class="founder-name">Denis</p>
+        <p class="founder-role">Founder &amp; coach</p>
+      </div>
+    </div>
+
+    <!-- display:contents on mobile so these four sit directly in the
+         section's flex column (ordered via their own `order`, interleaved
+         with the photo); a real flex column on desktop, forming column 2. -->
+    <div class="founder-content">
+      <p class="eyebrow founder-label" data-founder-reveal>Meet Denis</p>
+
+      <h2 class="founder-heading display" data-founder-reveal>
+        The person behind Alicante Paddle.
+      </h2>
+
+      <div class="founder-paragraphs" data-founder-reveal>
+        {paragraphs.map((text) => <p>{text}</p>)}
+      </div>
+
+      <div class="founder-cta" data-founder-reveal>
+        <a class="btn-outline" href="#contact">
+          <span>Train together</span>
+          <span class="btn-outline-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d={arrowPath}></path>
+            </svg>
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .founder {
+    background: var(--c-white);
+    padding-block: var(--s-section);
+  }
+
+  /* Desktop is a plain flex row, not a grid: a grid item spanning multiple
+     auto-sized rows ("grid-row: 1 / -1") sizes itself from its own content
+     when the row heights are ambiguous, collapsing the photo to ~68px.
+     The row is 1160 wide (560 + 80 + 520) and centred inside the 1312
+     container, not stretched across it. max-width includes the gutter
+     because .container is border-box. */
+  .founder-inner {
+    display: flex;
+    max-width: calc(72.5rem + var(--gutter) * 2); /* 1160 content */
+    align-items: center;
+    gap: 5rem; /* 80 */
+  }
+
+  .founder-content {
+    display: flex;
+    flex: 520 520 0;
+    flex-direction: column;
+  }
+
+  /* Figma runs this eyebrow at a flat 14 with no tracking, unlike the
+     global .eyebrow (fluid 12->14, 0.14em) that the other sections use. */
+  .founder-label {
+    color: var(--c-blue);
+    font-size: var(--t-small); /* 14 at every width */
+    letter-spacing: 0;
+  }
+
+  /* letter-spacing:0, not the global .display -0.02em — this heading is one
+     of the few Figma sets at zero tracking, and the negative value narrows
+     it enough to drop a wrapped line (3 lines instead of 4 on mobile). */
+  .founder-heading {
+    margin-top: var(--s-20);
+    font-size: 5.5rem; /* 88 */
+    line-height: 0.96;
+    letter-spacing: 0;
+  }
+
+  .founder-photo {
+    position: relative;
+    display: flex;
+    flex: 560 560 0;
+    flex-direction: column;
+    justify-content: flex-end;
+    aspect-ratio: 560 / 700;
+    overflow: hidden;
+    /* Traps the image's z-index:-1 locally — without this it escapes to
+       paint behind the whole section (white bg) instead of just behind
+       the caption bar. Same bug as Hero's photo-disappearing issue. */
+    isolation: isolate;
+  }
+
+  .founder-photo-img {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .founder-photo-caption {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--s-16) var(--s-24);
+    background: var(--c-blue);
+  }
+
+  /* line-height:normal, not the body's 1.5 — Figma sets both caption lines
+     to auto leading, which keeps the blue bar at 56 (mobile) / 68 (desktop) */
+  .founder-name {
+    color: var(--c-white);
+    font-weight: 700;
+    font-size: 1.125rem; /* 18 */
+    line-height: normal;
+    text-transform: uppercase;
+  }
+
+  .founder-role {
+    color: var(--c-lime);
+    font-weight: 600;
+    font-size: 0.8125rem; /* 13 */
+    line-height: normal;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  /* No cap here: the flex row already fixes this column at exactly 520px
+     (1160 total - 80 gap - 560 photo), so a measure cap would be redundant.
+     The stacked tier below needs its own — see the max-width there. */
+  .founder-paragraphs {
+    display: flex;
+    margin-top: var(--s-20);
+    flex-direction: column;
+    gap: var(--s-16);
+    color: var(--c-black);
+    font-size: 1.125rem; /* 18 */
+    line-height: 1.5;
+  }
+
+  /* Wrapper, not the <a>, carries the reveal (same reasoning as
+     Training's CTA — see that component for the full explanation of why
+     animating .btn-outline directly leaves a stuck inline transform). */
+  .founder-cta {
+    align-self: flex-start; /* desktop pill hugs its label */
+    margin-top: var(--s-20);
+  }
+
+  /* .btn-outline sets its own font-size, so overrides need to target it
+     directly — setting font-size on the wrapper div wouldn't inherit. */
+  .founder-cta .btn-outline {
+    width: auto;
+    gap: 0.875rem; /* 14 */
+    font-size: 0.9375rem; /* 15 */
+  }
+
+  /* --- Tablet and below: single column ---
+     .founder-content becomes `display:contents` so its children lay out as
+     direct flex items of .founder-inner and can be ordered individually to
+     interleave with the photo: label, heading, photo, copy, cta. */
+  @media screen and (max-width: 1023px) {
+    .founder-inner {
+      max-width: none;
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--s-24);
+    }
+
+    .founder-content {
+      display: contents;
+    }
+
+    .founder-label {
+      order: 1;
+      font-size: var(--t-small); /* 14 at every width */
+    }
+
+    /* Effectively governs only below 768 — the 768-1023 row tier below
+       overrides it for that range. */
+    .founder-heading {
+      order: 2;
+      margin-top: 0;
+      font-size: 4.375rem; /* 70 */
+    }
+
+    .founder-photo {
+      order: 3;
+      /* Without an explicit width, a flex column with only aspect-ratio set
+         shrinks to fit its content (the caption text) instead of filling the
+         available block width the way a plain div would. */
+      width: 100%;
+      flex: initial;
+      aspect-ratio: 342 / 430;
+    }
+
+    .founder-photo-caption {
+      padding: var(--s-12) var(--s-20);
+    }
+
+    .founder-name {
+      font-size: 1rem; /* 16 */
+    }
+
+    .founder-role {
+      font-size: var(--t-label); /* 12 */
+    }
+
+    /* Capped to a proper reading measure, not left to stretch with the
+       full-bleed photo/heading above: past ~480px wide, an un-capped column
+       at 16-18px puts 90+ characters on a line, which reads sparse and
+       loose for three short punchy sentences. True phones (<480) never hit
+       this — their available width is already narrower than the cap. */
+    .founder-paragraphs {
+      order: 4;
+      max-width: 28rem; /* 448 */
+      margin-top: 0;
+      gap: var(--s-16);
+      font-size: var(--t-body);
+    }
+
+    /* Same cap as the paragraphs above it — the button matching the photo's
+       full width instead was the actual original bug: a narrow paragraph
+       with a full-bleed pill underneath broke the column's rhythm. */
+    .founder-cta {
+      order: 5;
+      max-width: 28rem; /* 448 */
+      align-self: stretch; /* fills up to the cap; still full-bleed on phones */
+      margin-top: 0;
+    }
+
+    .founder-cta .btn-outline {
+      width: 100%;
+      gap: var(--s-12);
+      font-size: 1rem; /* 16 */
+    }
+  }
+
+  @media screen and (max-width: 479px) {
+    .founder-heading {
+      font-size: 2.875rem; /* 46 */
+    }
+  }
+
+  /* Tablet keeps the desktop's photo-beside-text row: the content box at 1023
+     is 928, barely under the 929 that already works at 1024, so the split
+     holds all the way down to 768. Only the heading needs its own scale — the
+     desktop clamp would put 70px type in a ~305 column. */
+  @media screen and (min-width: 768px) and (max-width: 1023px) {
+    .founder-inner {
+      flex-direction: row;
+      align-items: center;
+      gap: var(--s-40);
+    }
+
+    .founder-content {
+      display: flex;
+      flex: 520 520 0;
+      flex-direction: column;
+    }
+
+    .founder-label {
+      order: initial;
+    }
+
+    .founder-heading {
+      order: initial;
+      margin-top: var(--s-16);
+      font-size: 3rem; /* 48 */
+    }
+
+    .founder-photo {
+      order: initial;
+      width: auto;
+      max-width: none;
+      flex: 560 560 0;
+      margin-inline: 0;
+      aspect-ratio: 560 / 700;
+    }
+
+    /* Bigger than the <=1023 tier's fluid ~17px: at this width the text
+       column is only 328-428px, and small body type there reads thin next
+       to the much larger photo beside it. */
+    .founder-paragraphs {
+      order: initial;
+      margin-top: var(--s-16);
+      font-size: 1.25rem; /* 20 */
+    }
+
+    .founder-cta {
+      order: initial;
+      align-self: flex-start;
+      margin-top: var(--s-16);
+    }
+
+    .founder-cta .btn-outline {
+      width: fit-content;
+    }
+  }
+</style>
+
+<script>
+  // @ts-nocheck — project is plain JS
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!reduceMotion) {
+    const section = document.querySelector(".founder");
+
+    gsap.from(section.querySelectorAll("[data-founder-reveal]"), {
+      y: 24,
+      opacity: 0,
+      duration: 0.7,
+      stagger: 0.1,
+      ease: "power3.out",
+      scrollTrigger: { trigger: section, start: "top 75%" },
+    });
+  }
+</script>

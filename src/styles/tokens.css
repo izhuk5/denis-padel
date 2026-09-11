@@ -1,0 +1,397 @@
+/* --- Breakpoints ---
+Desktop-first: the base rules are the 1440 Figma layout and each query
+overrides downward. Custom properties do not work inside @media, so these
+stay literals in every component — keep this list as the reference and do
+not introduce values outside it.
+
+@media screen and (max-width: 1023px)   tablet and below
+@media screen and (max-width: 767px)    mobile landscape and below
+@media screen and (max-width: 479px)    mobile portrait
+
+Type scale is stepped per breakpoint too (see --t-* below, redefined at
+:root inside each query — that part of a custom property's value CAN
+change per media query, unlike a breakpoint number itself). Spacing and
+gutter remain fluid via clamp(): they're continuous by nature (padding,
+gaps), not the kind of thing that reads as a "jump" at a breakpoint the
+   way a font size does. */
+/* Fluid root scaling — interpolates html's own font-size continuously with
+   viewport width, so every rem-based value on the page (not just font-size
+   declarations) scales with it: spacing, --container, --gutter, the stepped
+   --t-* tokens above, every literal Nrem in every component. */
+
+:root {
+  --font-from: 16;
+  --font-to: 16;
+  --vw-from: calc(1440 / 100);
+  --vw-to: calc(1857 / 100);
+  --coefficient: calc(
+    (var(--font-to) - var(--font-from)) / (var(--vw-to) - var(--vw-from))
+  );
+  --base: calc((var(--font-from) - var(--vw-from) * var(--coefficient)) / 16);
+}
+
+html {
+  font-size: calc(var(--base) * 1rem + var(--coefficient) * 1vw);
+}
+
+@media screen and (max-width: 1440px) {
+  :root {
+    --font-from: 11.3666666672;
+    --font-to: 16;
+    --vw-from: calc(1023 / 100);
+    --vw-to: calc(1440 / 100);
+  }
+}
+
+@media screen and (max-width: 1023px) {
+  :root {
+    --font-from: 11.9960899312;
+    --font-to: 16;
+    --vw-from: calc(767 / 100);
+    --vw-to: calc(1023 / 100);
+  }
+}
+
+@media screen and (max-width: 767px) {
+  :root {
+    --font-from: 9.9921773136;
+    --font-to: 16;
+    --vw-from: calc(479 / 100);
+    --vw-to: calc(767 / 100);
+  }
+}
+
+@media screen and (max-width: 479px) {
+  :root {
+    --font-from: 0;
+    --font-to: 16;
+    --vw-from: calc(1 / 100);
+    --vw-to: calc(479 / 100);
+  }
+}
+
+:root {
+  /* Brand palette */
+  --c-blue: #1b54f5;
+  --c-lime: #c8f53d;
+  --c-black: #0a0a0a;
+  --c-white: #ffffff;
+  --c-cream: #f7f7f5;
+  --c-line: #c7c7c2;
+  --c-muted: #6b7078;
+  /* Body copy on --c-cream (headings/intros), a touch darker than --c-muted */
+  --c-ink-muted: #59595e;
+  /* Secondary text/rules on top of --c-blue — plain opacity goes muddy there */
+  --c-muted-on-blue: #c7d9ff;
+  /* Hairline between stacked list rows (journal articles) */
+  --c-divider: #d9d9d9;
+
+  /* Type families */
+  --f-display: "Roboto Condensed", "Arial Narrow", sans-serif;
+  --f-text: "Archivo", system-ui, -apple-system, sans-serif;
+  --f-logo: "Archivo Black", "Archivo", system-ui, sans-serif;
+
+  /* Type scale — stepped per breakpoint, not fluid. Each token is the
+     desktop (1440) value here; --t-hero/--t-h2/--t-h3/--t-lead/--t-body are
+     redefined below inside the three breakpoint queries. */
+  --t-hero: 7.75rem; /* 124 */
+  --t-h2: 5.5rem; /* 88 */
+  --t-h3: 3.5rem; /* 56 */
+  --t-lead: 1.25rem; /* 20 */
+  --t-body: 1.125rem; /* 18 */
+  --t-small: 0.875rem; /* 14 */
+  --t-label: 0.75rem; /* 12 */
+
+  /* Spacing scale — 4px grid */
+  --s-4: 0.25rem;
+  --s-8: 0.5rem;
+  --s-12: 0.75rem;
+  --s-16: 1rem;
+  --s-20: 1.25rem;
+  --s-24: 1.5rem;
+  --s-32: 2rem;
+  --s-40: 2.5rem;
+  --s-48: 3rem;
+  --s-64: 4rem;
+  --s-96: 6rem;
+  --s-120: 7.5rem;
+
+  /* Fluid section rhythm */
+  --s-section: clamp(4rem, 2.1rem + 7.8vw, 7.5rem); /* 64 -> 120 */
+
+  /* Layout */
+  --container: 90rem; /* 1440 */
+  --gutter: clamp(1.5rem, 0.6rem + 3.7vw, 4rem); /* 24 -> 64 */
+
+  --radius-pill: 999px;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Type scale steps. Custom properties CAN be redefined inside a media query
+   at :root — this is the one place fluid clamp() is replaced by a plain
+   cascade, so every var(--t-*) consumer below updates automatically. */
+@media screen and (max-width: 1023px) {
+  :root {
+    --t-hero: 6.25rem; /* 100 */
+    --t-h2: 4.375rem; /* 70 */
+    --t-h3: 2.75rem; /* 44 */
+    --t-lead: 1.125rem; /* 18 */
+    --t-body: 1.0625rem; /* 17 */
+  }
+}
+
+@media screen and (max-width: 767px) {
+  :root {
+    --t-hero: 5.25rem; /* 84 */
+    --t-h2: 3.5rem; /* 56 */
+    --t-h3: 2.25rem; /* 36 */
+    --t-lead: 1rem; /* 16 */
+    --t-body: 1rem; /* 16 */
+  }
+}
+
+@media screen and (max-width: 479px) {
+  :root {
+    --t-hero: 3.875rem; /* 62 */
+    --t-h2: 2.5rem; /* 40 */
+    --t-h3: 1.75rem; /* 28 */
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: calc(var(--base) * 1rem + var(--coefficient) * 1vw);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--c-white);
+  color: var(--c-black);
+  font-family: var(--f-text);
+  font-size: var(--t-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure {
+  margin: 0;
+}
+
+/* No orphans — last line of a paragraph or heading must carry at least 2
+   words. Only touches soft-wrap points; hard breaks (<br>, line-mask spans)
+   stay exactly where authored. */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  text-wrap: pretty;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+img,
+picture,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-blue);
+  outline-offset: 3px;
+}
+
+/* Shared layout helper */
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* Display heading base */
+.display {
+  font-family: var(--f-display);
+  font-weight: 900;
+  line-height: 0.96;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+/* Eyebrow label above headings */
+.eyebrow {
+  font-family: var(--f-text);
+  font-weight: 600;
+  font-size: var(--t-small); /* 14 */
+  line-height: normal;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+@media screen and (max-width: 479px) {
+  .eyebrow {
+    font-size: var(--t-label); /* 12 */
+  }
+}
+
+/* Large pill CTA (e.g. Hero's "Find tournament", Training's "Book training") */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-16);
+  /* 6/6/6/24 at 390 -> 8/8/8/32 at 1440, so the pill is 52 tall on mobile
+     and 64 on desktop, matching both hero and training CTAs */
+  padding: clamp(0.375rem, 0.329rem + 0.19vw, 0.5rem);
+  padding-left: clamp(1.5rem, 1.314rem + 0.76vw, 2rem);
+  border-radius: var(--radius-pill);
+  font-size: var(--t-body); /* 18 -> 17 -> 16, same steps as body copy */
+  font-weight: 700;
+  text-transform: uppercase;
+  transition:
+    transform 0.3s var(--ease-out),
+    background-color 0.3s var(--ease-out),
+    color 0.3s var(--ease-out);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn-icon {
+  display: grid;
+  width: clamp(40px, 36px + 1vw, 48px);
+  height: clamp(40px, 36px + 1vw, 48px);
+  flex: none;
+  place-items: center;
+  border-radius: var(--radius-pill);
+  transition: transform 0.3s var(--ease-out);
+}
+
+.btn:hover .btn-icon {
+  transform: rotate(-45deg);
+}
+
+.btn-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-light {
+  background: var(--c-white);
+  color: var(--c-black);
+}
+
+.btn-light .btn-icon {
+  background: var(--c-lime);
+}
+
+.btn-ghost {
+  border: 1.5px solid var(--c-white);
+  color: var(--c-white);
+}
+
+.btn-ghost .btn-icon {
+  border: 1.5px solid var(--c-white);
+}
+
+.btn-ghost:hover {
+  background: var(--c-white);
+  color: var(--c-black);
+}
+
+.btn-ghost:hover .btn-icon {
+  border-color: var(--c-black);
+}
+
+/* Outlined pill — Events, Founder and Journal all use it. Astro scopes a
+   component's <style> to that component, so a shared class has to live here.
+   This carries only what the three share; each section sets its own width and
+   label size, since Figma hugs the pill in some and runs it full-bleed in
+   others. Unlike the rest of the CSS these values are the stacked ones —
+   every consumer overrides them in its own desktop rules. */
+.btn-outline {
+  display: flex;
+  width: 100%;
+  /* A pill is a target, not a rule across the page. At 390 the design's
+     button is 342 wide, so this only bites once the column gets wide. */
+  max-width: 26rem; /* 416 */
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-12);
+  padding: 0.375rem 0.375rem 0.375rem var(--s-24);
+  border-radius: var(--radius-pill);
+  /* inset shadow, not a border — keeps the pill exactly 52 tall */
+  box-shadow: inset 0 0 0 2px var(--c-black);
+  background: var(--c-white);
+  color: var(--c-black);
+  font-weight: 700;
+  font-size: 1rem; /* 16 */
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: transform 0.25s var(--ease-out);
+}
+
+.btn-outline:hover {
+  transform: translateY(-2px);
+}
+
+.btn-outline-icon {
+  display: grid;
+  width: 2.5rem; /* 40 */
+  height: 2.5rem;
+  flex: none;
+  place-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--c-lime);
+}
+
+.btn-outline-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,211 @@
+---
+/* Figma draws this at 20x20 on desktop and 16x16 on mobile — the same shape
+   scaled, so one 16-unit viewBox covers both and CSS sizes the box. */
+const arrowPaths = ["M 16 8 L 10 16", "M 0 8 L 16 8 L 10 0"];
+---
+
+<section class="footer-cta" id="contact">
+  <div class="container footer-cta-inner">
+    <h2 class="footer-cta-heading display" data-cta-reveal>
+      Play.<br />Improve.<br />Connect.
+    </h2>
+
+    <div class="footer-cta-right" data-cta-reveal>
+      <p class="footer-cta-intro">
+        Padel tournaments, training and community in Alicante, Spain.
+      </p>
+
+      <div class="footer-cta-action">
+        <a class="btn-contact" href="mailto:hello@alicantepaddle.com">
+          <span>Contact Denis</span>
+          <span class="btn-contact-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+              {arrowPaths.map((d) => <path d={d} />)}
+            </svg>
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .footer-cta {
+    background: var(--c-lime);
+    color: var(--c-black);
+    /* 48/40 on mobile, 48/64 on desktop — the top inset is flat, only the
+       bottom one grows */
+    padding-block: var(--s-48) clamp(2.5rem, 1.94rem + 2.29vw, 4rem);
+  }
+
+  .footer-cta-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-48);
+  }
+
+  /* 76% leading, far tighter than the global .display 0.96, and no negative
+     tracking — both come straight from Figma. */
+  .footer-cta-heading {
+    font-size: 8rem; /* 128 */
+    line-height: 0.76;
+    letter-spacing: 0;
+  }
+
+  .footer-cta-right {
+    display: flex;
+    width: 30rem; /* 480 */
+    flex: 0 1 auto;
+    flex-direction: column;
+    gap: var(--s-24);
+  }
+
+  /* The pill hugs its label here; the wrapper has to stop stretching too,
+     or width:auto alone still leaves it filling the column. */
+  .footer-cta-action {
+    align-self: flex-start;
+  }
+
+  .footer-cta-intro {
+    font-size: 1.5rem; /* 24 */
+    line-height: 1.4;
+  }
+
+  /* Bigger than the site's other pills: 64 tall on mobile and 72 on desktop,
+     against 52/64 for .btn. Its own class rather than a .btn modifier. */
+  .btn-contact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-16);
+    padding: var(--s-8);
+    padding-left: clamp(1.5rem, 1.13rem + 1.52vw, 2.5rem); /* 24 -> 40 */
+    border-radius: var(--radius-pill);
+    background: var(--c-black);
+    color: var(--c-white);
+    font-weight: 700;
+    font-size: 1.5rem; /* 24 */
+    /* Sentence case, unlike the site's other pills. At 24 the caps version
+       runs 36px wider and reads far heavier than the design at the same
+       72 height. */
+    white-space: nowrap;
+    transition: transform 0.25s var(--ease-out);
+  }
+
+  .btn-contact:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn-contact-icon {
+    display: grid;
+    width: clamp(3rem, 2.81rem + 0.76vw, 3.5rem); /* 48 -> 56 */
+    height: clamp(3rem, 2.81rem + 0.76vw, 3.5rem);
+    flex: none;
+    place-items: center;
+    border-radius: var(--radius-pill);
+    background: var(--c-lime);
+    color: var(--c-black);
+    transition: transform 0.25s var(--ease-out);
+  }
+
+  .btn-contact:hover .btn-contact-icon {
+    transform: rotate(-45deg);
+  }
+
+  .btn-contact-icon svg {
+    width: clamp(1rem, 0.94rem + 0.25vw, 1.25rem); /* 16 -> 20 */
+    height: clamp(1rem, 0.94rem + 0.25vw, 1.25rem);
+  }
+
+  @media screen and (max-width: 1023px) {
+    .footer-cta-inner {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--s-24);
+    }
+
+    .footer-cta-right {
+      width: auto;
+      flex: initial;
+    }
+
+    .footer-cta-action {
+      align-self: stretch;
+    }
+
+    .btn-contact {
+      width: 100%;
+      max-width: 26rem; /* 416 */
+      gap: var(--s-12);
+      font-size: 1.375rem; /* 22 */
+    }
+
+    .footer-cta-heading {
+      font-size: 6.25rem; /* 100 */
+    }
+
+    .footer-cta-intro {
+      font-size: 1.375rem; /* 22 */
+    }
+  }
+
+  @media screen and (max-width: 767px) {
+    .footer-cta-heading {
+      font-size: 5.125rem; /* 82 */
+    }
+
+    .footer-cta-intro {
+      font-size: 1.25rem; /* 20 */
+    }
+
+    .btn-contact {
+      font-size: 1.25rem; /* 20 */
+    }
+  }
+
+  @media screen and (max-width: 479px) {
+    .footer-cta-heading {
+      font-size: 3.5rem; /* 56 */
+    }
+
+    .footer-cta-intro {
+      font-size: 1.125rem; /* 18 */
+    }
+  }
+
+  /* A pill is a target, not a bar — full width only makes sense on a phone. */
+  @media screen and (min-width: 768px) and (max-width: 1023px) {
+    .footer-cta-action {
+      align-self: flex-start;
+    }
+
+    .btn-contact {
+      width: auto;
+    }
+  }
+
+</style>
+
+<script>
+  // @ts-nocheck — project is plain JS
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!reduceMotion) {
+    const section = document.querySelector(".footer-cta");
+
+    gsap.from(section.querySelectorAll("[data-cta-reveal]"), {
+      y: 24,
+      opacity: 0,
+      duration: 0.7,
+      stagger: 0.12,
+      ease: "power3.out",
+      scrollTrigger: { trigger: section, start: "top 80%" },
+    });
+  }
+</script>

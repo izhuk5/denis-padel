@@ -1,0 +1,65 @@
+---
+import "../styles/tokens.css";
+
+const {
+  title = "Alicante Paddle — padel tournaments, training and community",
+  description = "Tournaments, training and a vibrant padel community in Alicante, Spain.",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Black&family=Roboto+Condensed:wght@900&display=swap"
+    />
+  </head>
+  <body>
+    <slot />
+
+    <script>
+      // @ts-nocheck — project is plain JS
+      import Lenis from "lenis";
+      import { gsap } from "gsap";
+      import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+      gsap.registerPlugin(ScrollTrigger);
+
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      if (!reduceMotion) {
+        const lenis = new Lenis({ duration: 1.1, smoothWheel: true });
+
+        // Exposed so any component (e.g. the mobile menu) can stop/start
+        // the smooth-scroll loop — body { overflow: hidden } alone does not
+        // stop Lenis, since it drives scroll itself instead of relying on
+        // native page scroll.
+        window.__lenis = lenis;
+
+        lenis.on("scroll", ScrollTrigger.update);
+
+        gsap.ticker.add((time) => lenis.raf(time * 1000));
+        gsap.ticker.lagSmoothing(0);
+
+        // Anchor links scroll through Lenis so easing stays consistent
+        document.querySelectorAll('a[href^="#"]').forEach((link) => {
+          link.addEventListener("click", (event) => {
+            const target = document.querySelector(link.getAttribute("href"));
+            if (!target) return;
+            event.preventDefault();
+            lenis.scrollTo(target, { offset: 0 });
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

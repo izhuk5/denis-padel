@@ -1,0 +1,921 @@
+---
+import { Image } from "astro:assets";
+import { pricingRows } from "../data/pricing.js";
+import personalImg from "../assets/images/training-personal.png";
+import groupImg from "../assets/images/training-group.png";
+
+const arrowPath = "M0 8h16M16 8l-6-8M16 8l-6 8";
+---
+
+<section class="training" id="training">
+  <div class="container training-inner">
+    <div class="training-header">
+      <p class="eyebrow training-label" data-reveal>Training</p>
+
+      <h2 class="training-heading display">
+        <span class="line-mask"><span class="line-inner" data-line>Develop your</span></span>
+        <span class="line-mask"><span class="line-inner" data-line>game.</span></span>
+      </h2>
+
+      <p class="training-description" data-reveal>
+        Personal and group training with Denis in Alicante. Improve your technique, understand
+        the game better and feel more confident every time you step on court.
+      </p>
+
+      <div class="training-cta" data-reveal>
+        <a class="btn btn-light" href="#contact">
+          <span>Book training</span>
+          <span class="btn-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d={arrowPath}></path>
+            </svg>
+          </span>
+        </a>
+      </div>
+    </div>
+
+    <div class="training-grid">
+      <article class="training-card training-card-personal" data-reveal>
+        <div class="card-text">
+          <div class="card-price-block">
+            <div class="card-price-row">
+              <span class="card-price display">€30</span>
+              <span class="card-price-unit">/ 1 hour</span>
+            </div>
+            <span class="card-rule" aria-hidden="true"></span>
+            <h3 class="card-title display">Personal<br />training</h3>
+            <p class="card-description">
+              One-on-one training focused entirely on your game. Work on technique, positioning,
+              tactics and the areas that will make the biggest difference to your performance.
+            </p>
+          </div>
+
+          <div class="card-bottom-group">
+            <span class="card-rule" aria-hidden="true"></span>
+            <p class="card-caption">Train smarter.<br />See real progress.</p>
+          </div>
+        </div>
+
+        <div class="card-photo card-photo-personal">
+          <Image
+            src={personalImg}
+            alt="Denis coaching a one-on-one padel training session"
+            widths={[420, 632]}
+            sizes="(max-width: 1023px) 100vw, 22vw"
+            format="avif"
+            class="card-photo-img"
+          />
+        </div>
+
+        <a class="btn-pill btn-pill-session" href="#contact">
+          <span>Book session</span>
+          <span class="btn-pill-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d={arrowPath}></path>
+            </svg>
+          </span>
+        </a>
+      </article>
+
+      <div class="training-column">
+        <article class="training-card training-card-group" data-reveal>
+          <div class="card-photo card-photo-group">
+            <Image
+              src={groupImg}
+              alt="Denis leading a group padel training session"
+              widths={[480, 720]}
+              sizes="(max-width: 1023px) 100vw, 15vw"
+              format="avif"
+              class="card-photo-img"
+            />
+          </div>
+
+          <div class="card-text">
+            <div class="card-price-row">
+              <span class="card-price display">€40</span>
+              <span class="card-price-unit">/ session</span>
+            </div>
+            <span class="card-rule" aria-hidden="true"></span>
+            <h3 class="card-title display">Group training</h3>
+            <p class="card-description">
+              Train together, improve through real game situations and put new skills into
+              practice on court.
+            </p>
+            <p class="card-caption">Better players.<br />A stronger community.</p>
+          </div>
+
+          <a class="btn-pill btn-pill-group" href="#contact">
+            <span>Book group</span>
+            <span class="btn-pill-icon" aria-hidden="true">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d={arrowPath}></path>
+              </svg>
+            </span>
+          </a>
+        </article>
+
+        <article class="training-card training-card-pricing" data-reveal>
+          <h3 class="card-heading display">Train consistently.<br />Pay less.</h3>
+
+          <div class="pricing-table">
+            {
+              pricingRows.map((row) => (
+                <div class="pricing-row">
+                  <span class="pricing-label">{row.label}</span>
+                  <span class="pricing-divider" aria-hidden="true" />
+                  <span class="pricing-price display">{row.price}</span>
+                  <span class="pricing-old-price">{row.oldPrice}</span>
+                  <span class="pricing-save-badge">{row.save}</span>
+                </div>
+              ))
+            }
+          </div>
+
+          <div class="card-footer">
+            <p class="card-footer-note">Use within 30 days. Court fee not included.</p>
+            <a class="btn-pill btn-pill-dark" href="#contact">
+              <span>Choose package</span>
+              <span class="btn-pill-icon btn-pill-icon-dark" aria-hidden="true">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d={arrowPath}></path>
+                </svg>
+              </span>
+            </a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .training {
+    background: var(--c-cream);
+    padding-block: var(--s-section);
+  }
+
+  .training-inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-32);
+  }
+
+  /* Header is centred at every width — the Figma desktop frame centres it
+     inside the 1312 content column, same as mobile. */
+  .training-header {
+    display: flex;
+    max-width: 38rem; /* 608 */
+    flex-direction: column;
+    align-items: center;
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .training-label {
+    color: var(--c-blue);
+    font-size: var(--t-small); /* 14 at every width */
+  }
+
+  .training-heading {
+    margin-top: var(--s-12);
+    font-size: 5.625rem; /* 90 */
+  }
+
+  /* No padding/negative-margin trick here: the negative margins on adjacent
+     masks collapse into one, which left each line ~4px taller than the
+     design. All-caps copy has no descenders to clip anyway. */
+  .line-mask {
+    display: block;
+    overflow: hidden;
+  }
+
+  /* block, not inline-block: an inline-block picks up the line box's leading */
+  .line-inner {
+    display: block;
+  }
+
+  .training-description {
+    margin-top: var(--s-16);
+    color: var(--c-ink-muted);
+    font-size: var(--t-body);
+    line-height: 1.5;
+  }
+
+  /* Wrapper, not the <a>, carries the reveal: GSAP writes transform every
+     frame and .btn has `transition: transform`, so animating the button
+     itself makes the two fight and leaves a stuck inline transform that
+     then blocks the hover lift. */
+  .training-cta {
+    margin-top: var(--s-24);
+  }
+
+  /* --- Grid --- */
+  /* Cards sit flush on mobile — each carries its own solid fill, which is
+     what separates them — and break out of the container to run edge to
+     edge; only the header keeps the gutter. */
+  .training-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-inline: calc(var(--gutter) * -1);
+  }
+
+
+  .training-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* Padding lives on the card so the photo is inset by it too, matching the
+     Figma mobile frames. Desktop moves it onto .card-text instead. */
+  .training-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-24);
+    padding: var(--s-32) var(--s-24);
+    color: var(--c-white);
+  }
+
+  /* Secondary tone differs per card: a cool tint reads on blue, but on the
+     black card it has to be a neutral grey. */
+  .training-card-personal {
+    --card-dim: var(--c-muted-on-blue);
+
+    background: var(--c-blue);
+  }
+
+  .training-card-group {
+    --card-dim: #bfbfbf;
+
+    background: var(--c-black);
+  }
+
+  .card-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-16);
+  }
+
+  /* Personal card only — group's card-text has no nested sub-group (its 5
+     children sit flush in the shared .card-text list, gap 16 throughout) */
+  .card-price-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-16);
+  }
+
+  .card-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-8);
+  }
+
+  /* Personal's price/title — bigger than group's (overridden below) */
+  .card-price {
+    font-size: 6.75rem; /* 108 */
+    line-height: 0.88;
+  }
+
+  .card-price-unit {
+    color: var(--card-dim);
+    font-size: var(--t-small); /* 14 */
+    font-weight: 600;
+    line-height: normal;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .card-rule {
+    display: block;
+    width: 3rem; /* 48 */
+    height: 1px;
+    background: var(--card-dim);
+  }
+
+  .card-title {
+    font-size: 3.75rem; /* 60 */
+    line-height: 1;
+  }
+
+  .training-card-group .card-title {
+    line-height: 0.96;
+  }
+
+  /* No max-width: the copy simply fills its column at every breakpoint */
+  .card-description {
+    color: var(--card-dim);
+    font-size: var(--t-small);
+    line-height: 1.5;
+  }
+
+  .card-bottom-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-16);
+    margin-top: auto;
+  }
+
+  .card-caption {
+    color: var(--c-white);
+    font-size: var(--t-label);
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* Group card runs a full size step below personal's — Figma: price
+     56->84 (vs 64->108), title 32->44 (vs 36->60), unit 12->14 (vs 14->16),
+     tighter caption tracking (3% vs 4%). */
+  .training-card-group .card-price {
+    font-size: 5.25rem; /* 84 */
+  }
+
+  .training-card-group .card-price-unit {
+    font-size: var(--t-label); /* 12 */
+  }
+
+  .training-card-group .card-title {
+    font-size: 2.75rem; /* 44 */
+  }
+
+  .training-card-group .card-caption {
+    letter-spacing: 0.03em;
+  }
+
+  .card-photo {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+  }
+
+  .card-photo-personal {
+    aspect-ratio: 342 / 260;
+  }
+
+  .card-photo-group {
+    aspect-ratio: 342 / 220;
+  }
+
+  .card-photo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* --- Buttons ---
+     One size for all three pills: 6/6/6/24, gap 12, label 16, icon 40.
+     Full-width on mobile, hugging on desktop; only placement differs. */
+  .btn-pill {
+    display: inline-flex;
+    width: 100%;
+    max-width: 26rem; /* 416 — see .btn-outline in tokens.css */
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-12);
+    padding: 0.375rem 0.375rem 0.375rem var(--s-24);
+    border-radius: var(--radius-pill);
+    background: var(--c-white);
+    color: var(--c-black);
+    font-weight: 700;
+    font-size: 1rem; /* 16 */
+    text-transform: uppercase;
+    white-space: nowrap; /* keeps all three exactly 52 tall */
+    transition: transform 0.25s var(--ease-out);
+  }
+
+  .btn-pill:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn-pill-icon {
+    display: grid;
+    width: 2.5rem; /* 40 */
+    height: 2.5rem;
+    flex: none;
+    place-items: center;
+    border-radius: var(--radius-pill);
+    background: var(--c-lime);
+  }
+
+  .btn-pill-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .btn-pill-icon-dark {
+    background: var(--c-black);
+    color: var(--c-lime);
+  }
+
+  /* --- Pricing card --- */
+  .training-card-pricing {
+    background: var(--c-lime);
+    color: var(--c-black);
+  }
+
+  .card-heading {
+    font-size: 2.75rem; /* 44 */
+    line-height: 0.96;
+    letter-spacing: -0.01em;
+  }
+
+  .pricing-table {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Rows carry no rules in the design — the row rhythm alone separates them */
+  .pricing-row {
+    display: flex;
+    align-items: center;
+    gap: var(--s-12);
+    padding-block: 0.875rem; /* 14 */
+  }
+
+  .pricing-label {
+    min-width: 0;
+    flex: 1;
+    font-weight: 700;
+    font-size: var(--t-label); /* 12 */
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+  }
+
+  .pricing-divider {
+    width: 1px;
+    height: 1.5rem; /* 24 */
+    flex: none;
+    background: var(--c-black);
+  }
+
+  .pricing-price {
+    font-size: 1.5rem; /* 24 */
+    line-height: 1;
+  }
+
+  /* Dark olive rather than flat black — reads as "struck out" on the lime */
+  .pricing-old-price {
+    color: #262e0d;
+    font-size: var(--t-small); /* 14 */
+    text-decoration: line-through;
+  }
+
+  .pricing-save-badge {
+    padding: 0.375rem 0.625rem; /* 6/10 */
+    background: var(--c-black);
+    color: var(--c-lime);
+    font-weight: 700;
+    font-size: var(--t-label);
+    line-height: normal;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .card-footer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-16);
+  }
+
+  .card-footer-note {
+    font-size: var(--t-small);
+    line-height: 1.4;
+  }
+
+  /* --- Desktop: two-up grid, cards go row-oriented ---
+     Preserves the Figma 688:600 column ratio fluidly — fr accepts any
+     positive number, so the split scales with the viewport instead of
+     freezing at fixed pixel widths. */
+  /* Figma stacks a 48px section gap on top of the grid wrapper's own
+     48px top padding */
+  .training-inner {
+    gap: var(--s-96);
+  }
+
+  .training-heading {
+    margin-top: var(--s-16);
+  }
+
+  .training-description {
+    margin-top: var(--s-24);
+  }
+
+  .training-cta {
+    margin-top: var(--s-32);
+  }
+
+  /* Preserves the Figma 688:600 column ratio, fluidly — fr accepts any
+     positive number, so this scales the split with the viewport instead
+     of freezing it at fixed pixel widths. */
+  .training-grid {
+    display: grid;
+    grid-template-columns: 688fr 600fr;
+    align-items: stretch;
+    gap: var(--s-24);
+    margin-inline: 0; /* the mobile full-bleed breakout ends here */
+  }
+
+  /* Padding moves onto .card-text so the photos can bleed to the card edge */
+  .training-card-personal,
+  .training-card-group {
+    flex-direction: row;
+    gap: 0;
+    padding: 0;
+  }
+
+  .card-photo-personal {
+    flex: 1;
+    aspect-ratio: auto;
+  }
+
+  /* Bottom padding reserves the row the absolutely-placed button occupies
+     (40 inset + 52 button + 16 gap), so space-between still lands the
+     caption directly above it. */
+  .training-card-personal .card-text {
+    flex: none;
+    width: 54%; /* 372/688 */
+    justify-content: space-between;
+    padding: var(--s-40) var(--s-24) calc(var(--s-40) + 3.25rem + var(--s-16)) var(--s-40);
+  }
+
+  /* Lives after the photo in the DOM (mobile order); on desktop it belongs
+     at the foot of the text column instead. */
+  .btn-pill-session {
+    position: absolute;
+    bottom: var(--s-40);
+    left: var(--s-40);
+  }
+
+  /* Fixed 360 tall in Figma; the grid row then stretches the personal
+     card to match the column's total height. */
+  .training-card-group {
+    min-height: 22.5rem; /* 360 */
+  }
+
+  .card-photo-group {
+    flex: none;
+    order: 2;
+    width: 40%; /* 240/600 */
+    aspect-ratio: auto;
+  }
+
+  .training-card-group .card-text {
+    order: 1;
+    width: 60%; /* 360/600 */
+    justify-content: center;
+    padding: 0 var(--s-16) 0 var(--s-32);
+  }
+
+  .training-card-group .card-rule {
+    width: 2.5rem; /* 40 */
+  }
+
+  .card-title,
+  .training-card-group .card-title {
+    line-height: 0.94;
+  }
+
+  /* In the two-up grid the personal card's copy sits in a 54%-of-52%
+     column, so its display type has to be recalibrated for THIS range
+     (901 -> 1440) rather than the stacked one (390 -> 1440); otherwise
+     "PERSONAL" overflows into the photo below ~1280. */
+  .training-card-personal .card-price {
+    font-size: 6.75rem; /* 108 */
+  }
+
+  /* Capped below the Figma 1440 value (60): at 44 this already fills the
+     narrow 54%-of-688 column right at 1024, and 60 clips "PERSONAL" there —
+     the old clamp grew this gradually across 1024-1440, a step the fixed
+     breakpoint system can't reproduce without a 1280-ish tier it doesn't have. */
+  .training-card-personal .card-title {
+    font-size: 2.75rem; /* 44 */
+  }
+
+  .training-card-personal .card-price-unit {
+    font-size: 1rem; /* 16 */
+  }
+
+  .training-card-group .card-price-unit {
+    font-size: var(--t-small); /* 14 */
+  }
+
+  /* All three pills share one size — only placement differs */
+  .btn-pill {
+    width: auto;
+  }
+
+  .training-card-group .card-description {
+    line-height: 1.45;
+  }
+
+  /* Sits over the photo's bottom corner. Anchored from the right, not the
+     photo's left edge: the pill is a fixed size, so a left anchor pushes
+     it past the card once the photo column narrows (49px over at 901).
+     z-index is needed because the photo's `order: 2` moves it later in
+     paint order, so it would otherwise cover this button. */
+  .btn-pill-group {
+    position: absolute;
+    z-index: 1;
+    right: var(--s-16);
+    bottom: var(--s-16);
+    box-shadow: 0 8px 24px rgba(10, 10, 10, 0.25);
+  }
+
+  .btn-pill-dark {
+    align-self: flex-end;
+  }
+
+  .training-card-pricing {
+    padding: var(--s-32);
+  }
+
+  .card-footer {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-footer-note {
+    max-width: 16.5rem; /* 264 */
+  }
+
+  .pricing-row {
+    gap: var(--s-16);
+    padding-block: var(--s-12);
+  }
+
+  .pricing-label {
+    font-size: 1rem; /* 16 */
+    letter-spacing: 0.02em;
+  }
+
+  .pricing-price {
+    font-size: 2rem; /* 32 */
+  }
+
+  .pricing-old-price {
+    font-size: 1.125rem; /* 18 */
+  }
+
+  .pricing-save-badge {
+    padding: 0.375rem 0.875rem; /* 6/14 */
+    font-size: var(--t-small); /* 14 */
+  }
+
+
+  /* --- Tablet and below: cards stack and go full-bleed ---
+     Restores the values the desktop rules above override, plus explicit
+     resets for the declarations that only exist up there (absolute pill
+     placement, column widths, the group card's min-height). */
+  @media screen and (max-width: 1023px) {
+    .training-inner {
+      gap: var(--s-32);
+    }
+
+    .training-heading {
+      margin-top: var(--s-12);
+      font-size: 4.5rem; /* 72 */
+    }
+
+    .training-description {
+      margin-top: var(--s-16);
+    }
+
+    .training-cta {
+      margin-top: var(--s-24);
+    }
+
+    .training-grid {
+      display: flex;
+      gap: 0;
+      margin-inline: calc(var(--gutter) * -1);
+    }
+
+    .training-card-personal,
+    .training-card-group {
+      flex-direction: column;
+      gap: var(--s-24);
+      padding: var(--s-32) var(--s-24);
+    }
+
+    .training-card-group {
+      min-height: 0;
+    }
+
+    .card-photo-personal {
+      flex: initial;
+      aspect-ratio: 342 / 260;
+    }
+
+    .card-photo-group {
+      order: initial;
+      width: auto;
+      flex: initial;
+      aspect-ratio: 342 / 220;
+    }
+
+    .training-card-personal .card-text,
+    .training-card-group .card-text {
+      order: initial;
+      width: auto;
+      flex: initial;
+      justify-content: flex-start;
+      padding: 0;
+    }
+
+    .training-card-group .card-rule {
+      width: 3rem; /* 48 */
+    }
+
+    .card-title {
+      line-height: 1;
+    }
+
+    .training-card-group .card-title {
+      line-height: 0.96;
+    }
+
+    .training-card-personal .card-price {
+      font-size: 5.625rem; /* 90 */
+    }
+
+    .training-card-personal .card-title {
+      font-size: 3.125rem; /* 50 */
+    }
+
+    .training-card-personal .card-price-unit {
+      font-size: var(--t-small); /* 14 */
+    }
+
+    /* Unguarded above 1024 (no min-width there), so these two continue to
+       apply at every width down to 390 unless stepped here too. */
+    .training-card-group .card-price {
+      font-size: 4.5rem; /* 72 */
+    }
+
+    .training-card-group .card-title {
+      font-size: 2.4375rem; /* 39 */
+    }
+
+    .training-card-group .card-price-unit {
+      font-size: var(--t-label); /* 12 */
+    }
+
+    .training-card-group .card-description {
+      line-height: 1.5;
+    }
+
+    /* The pills sit in normal flow again, full width */
+    .btn-pill {
+      width: 100%;
+    }
+
+    .btn-pill-session,
+    .btn-pill-group {
+      position: static;
+      z-index: auto;
+      box-shadow: none;
+      inset: auto;
+    }
+
+    .btn-pill-dark {
+      align-self: stretch;
+    }
+
+    .training-card-pricing {
+      padding: var(--s-32) var(--s-24);
+    }
+
+    .card-footer {
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+    }
+
+    .card-footer-note {
+      max-width: none;
+    }
+
+    .pricing-row {
+      gap: var(--s-12);
+      padding-block: 0.875rem;
+    }
+
+    .pricing-label {
+      font-size: var(--t-label);
+      letter-spacing: 0.02em;
+    }
+
+    .pricing-price {
+      font-size: 1.5rem;
+    }
+
+    .pricing-old-price {
+      font-size: var(--t-small);
+    }
+
+    .pricing-save-badge {
+      padding: 0.375rem 0.625rem;
+      font-size: var(--t-small);
+    }
+  }
+
+  @media screen and (max-width: 767px) {
+    .training-heading {
+      font-size: 3.75rem; /* 60 */
+    }
+
+    .training-card-personal .card-price {
+      font-size: 5rem; /* 80 */
+    }
+
+    .training-card-personal .card-title {
+      font-size: 2.75rem; /* 44 */
+    }
+
+    .training-card-group .card-price {
+      font-size: 4.125rem; /* 66 */
+    }
+
+    .training-card-group .card-title {
+      font-size: 2.25rem; /* 36 */
+    }
+  }
+
+  @media screen and (max-width: 479px) {
+    .training-heading {
+      font-size: 2.75rem; /* 44 */
+    }
+
+    .training-card-personal .card-price {
+      font-size: 4rem; /* 64, exact Figma mobile value */
+    }
+
+    .training-card-personal .card-title {
+      font-size: 2.25rem; /* 36, exact Figma mobile value */
+    }
+
+    .training-card-group .card-price {
+      font-size: 3.5rem; /* 56, exact Figma mobile value */
+    }
+
+    .training-card-group .card-title {
+      font-size: 2rem; /* 32, exact Figma mobile value */
+    }
+  }
+
+  /* Tablet gets the desktop's two-column split (personal card | group +
+     pricing) while the cards keep their stacked internals — it was only the
+     row-oriented card that broke below 1024. Centring a single phone-width
+     column here instead would leave ~240 of dead space per side while every
+     neighbouring section already fills the width. */
+  @media screen and (min-width: 768px) and (max-width: 1023px) {
+    .training-grid {
+      display: grid;
+      max-width: none;
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+      margin-inline: 0;
+      gap: var(--s-24);
+    }
+
+    .training-column {
+      gap: var(--s-24);
+    }
+  }
+
+</style>
+
+<script>
+  // @ts-nocheck — project is plain JS
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!reduceMotion) {
+    const section = document.querySelector(".training");
+
+    gsap.from(section.querySelectorAll("[data-line]"), {
+      yPercent: 115,
+      duration: 0.9,
+      stagger: 0.08,
+      ease: "power3.out",
+      scrollTrigger: { trigger: section, start: "top 80%" },
+    });
+
+    gsap.from(section.querySelectorAll("[data-reveal]"), {
+      y: 24,
+      opacity: 0,
+      duration: 0.7,
+      stagger: 0.08,
+      ease: "power3.out",
+      scrollTrigger: { trigger: section, start: "top 75%" },
+    });
+  }
+</script>

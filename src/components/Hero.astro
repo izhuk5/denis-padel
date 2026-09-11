@@ -1,0 +1,300 @@
+---
+import { Image } from "astro:assets";
+import Nav from "./Nav.astro";
+import heroImage from "../assets/images/hero-court.jpg";
+---
+
+<section class="hero" id="top">
+  <!-- Isolated on purpose: the photo and gradient use negative z-index to
+       sit behind the text, which only works reliably inside their own
+       stacking context. Nav (and its fixed mobile-menu overlay) lives
+       OUTSIDE this wrapper so the overlay isn't trapped by it. -->
+  <div class="hero-visual">
+    <div class="hero-media" data-hero-media>
+      <Image
+        src={heroImage}
+        alt="Padel player hitting a backhand on a blue court in Alicante"
+        widths={[720, 1080, 1472]}
+        sizes="100vw"
+        format="avif"
+        loading="eager"
+        fetchpriority="high"
+        class="hero-image"
+      />
+    </div>
+  </div>
+
+  <div class="hero-inner container">
+    <Nav />
+
+    <div class="hero-content">
+      <p class="eyebrow hero-eyebrow" data-hero-fade>Padel community — Alicante, Spain</p>
+
+      <h1 class="hero-title display">
+        <span class="hero-line"><span class="hero-line-inner">Play.</span></span>
+        <span class="hero-line hero-line-improve">
+          <span class="hero-line-inner"><mark class="hero-mark">Improve.</mark></span>
+        </span>
+        <span class="hero-line hero-line-connect"><span class="hero-line-inner">Connect.</span></span>
+      </h1>
+
+      <p class="hero-subtitle" data-hero-fade>
+        Tournaments, training and a vibrant <br />padel community in Alicante.
+      </p>
+
+      <div class="hero-actions" data-hero-fade>
+        <a class="btn btn-light" href="#tournaments">
+          <span>Find tournament</span>
+          <span class="btn-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M0 8h16M16 8l-6-8M16 8l-6 8"></path>
+            </svg>
+          </span>
+        </a>
+
+        <a class="btn btn-ghost" href="#training">
+          <span>Book training</span>
+          <span class="btn-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M0 8h16M16 8l-6-8M16 8l-6 8"></path>
+            </svg>
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* No isolation/z-index here on purpose: creating a stacking context on
+     .hero would trap the mobile nav's fixed-position overlay inside it,
+     so later sections (which come after .hero in the DOM) would paint
+     over the open menu regardless of its own z-index. */
+  .hero {
+    position: relative;
+    display: flex;
+    min-height: 100svh;
+    flex-direction: column;
+    justify-content: stretch;
+    overflow: hidden;
+    background: var(--c-black);
+    color: var(--c-white);
+  }
+
+  /* This wrapper — not .hero — is the stacking context, so its own
+     isolation can't reach past it and trap anything else on the page. */
+  .hero-visual {
+    position: absolute;
+    inset: 0;
+    isolation: isolate;
+  }
+
+  /* Media wrapper is oversized so GSAP can drift it without exposing edges */
+  .hero-media {
+    position: absolute;
+    z-index: -2;
+    inset: -8% 0;
+  }
+
+  .hero-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 72% 50%;
+  }
+
+  .hero-visual::after {
+    position: absolute;
+    z-index: -1;
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.55) 0%,
+      rgba(0, 0, 0, 0) 22%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    content: "";
+    inset: 0;
+  }
+
+  /* Mobile: simple top-down stack — content sits right under the nav,
+     matching the Figma mobile frame (pad 32/40, gap 32, no space-between).
+     position: relative matters here: .hero-visual is position: absolute,
+     and a positioned box always paints above a static one regardless of
+     DOM order — without this, the photo would sit on top of the nav/text
+     and swallow every click. */
+  /* Content is bottom-anchored via space-between + a large bottom padding,
+     matching the Figma desktop frame (pad 40/168, gap 0). */
+  .hero-inner {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0;
+    padding-top: clamp(2rem, 1.6rem + 1.5vw, 2.5rem);
+    padding-bottom: clamp(2.5rem, -0.4rem + 11.9vw, 10.5rem);
+  }
+
+  .hero-content {
+    max-width: 60rem;
+  }
+
+  .hero-eyebrow {
+    letter-spacing: 0.14em;
+  }
+
+  .hero-title {
+    margin-top: var(--s-16);
+    font-size: var(--t-hero);
+  }
+
+  /* Masks the line so the intro reveal slides up from behind it.
+     Padding/margin pair keeps the lime highlight box from being clipped. */
+  .hero-line {
+    display: block;
+    overflow: hidden;
+    padding-block: 0.1em;
+    margin-block: -0.1em;
+  }
+
+  .hero-line-inner {
+    display: inline-block;
+  }
+
+  .hero-mark {
+    display: inline-block;
+    padding: 0.05em 0.13em 0.08em;
+    background: var(--c-lime);
+    color: var(--c-black);
+  }
+
+  .hero-subtitle {
+    margin-top: var(--s-16);
+    font-size: var(--t-lead);
+    line-height: 1.5;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: var(--s-24);
+    gap: var(--s-16);
+  }
+
+  /* .btn / .btn-light / .btn-ghost / .btn-icon are global utilities in
+     tokens.css — Astro scopes component CSS per-file, so a component that
+     reuses them (e.g. Training's header CTA) wouldn't see rules defined
+     here. Only Hero-specific overrides stay local below. */
+
+  /* Staggered indents only make sense once the line has room to breathe */
+  .hero-line-improve {
+    padding-left: 0.9em;
+  }
+
+  .hero-line-connect {
+    padding-left: 2.69em;
+  }
+
+  @media screen and (max-width: 1023px) {
+    .hero-inner {
+      justify-content: flex-start;
+      gap: var(--s-32);
+      padding-top: clamp(1.75rem, 1.55rem + 0.85vw, 2rem); /* 28 -> 32 */
+      padding-bottom: clamp(2rem, 1.7rem + 1.25vw, 2.5rem); /* 32 -> 40 */
+    }
+
+    .hero-visual::after {
+      background: linear-gradient(
+        180deg,
+        rgba(5, 23, 71, 0.62) 0%,
+        rgba(5, 23, 71, 0.18) 55%,
+        rgba(5, 23, 71, 0) 100%
+      );
+    }
+
+    .hero-line-improve,
+    .hero-line-connect {
+      padding-left: 0;
+    }
+
+    .hero-subtitle br {
+      display: none;
+    }
+  }
+
+  /* Narrow viewports crop the photo hard — keep the player in frame,
+     and add a bottom scrim so the copy stays readable over bright court */
+  @media screen and (max-width: 767px) {
+    .hero-image {
+      object-position: 80% 38%;
+    }
+
+    .hero-visual::after {
+      background: linear-gradient(
+        180deg,
+        rgba(5, 23, 71, 0.62) 0%,
+        rgba(5, 23, 71, 0.14) 42%,
+        rgba(5, 23, 71, 0.62) 100%
+      );
+    }
+  }
+
+  @media screen and (max-width: 479px) {
+    .hero-actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--s-12);
+    }
+
+    /* Full-width stack — the pill's own padding is already correct */
+    .btn {
+      justify-content: space-between;
+    }
+  }
+</style>
+
+<script>
+  // @ts-nocheck — project is plain JS
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!reduceMotion) {
+    const lines = gsap.utils.toArray(".hero-line-inner");
+    const fades = gsap.utils.toArray("[data-hero-fade]");
+
+    const intro = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+    intro
+      .from(lines, {
+        yPercent: 115,
+        duration: 1,
+        stagger: 0.09,
+      })
+      .from(
+        fades,
+        {
+          y: 24,
+          opacity: 0,
+          duration: 0.8,
+          stagger: 0.12,
+        },
+        "-=0.55"
+      );
+
+    // Photo drifts slower than the page — depth without hiding the subject
+    gsap.to("[data-hero-media]", {
+      yPercent: 12,
+      ease: "none",
+      scrollTrigger: {
+        trigger: ".hero",
+        start: "top top",
+        end: "bottom top",
+        scrub: true,
+      },
+    });
+  }
+</script>

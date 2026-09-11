@@ -1,0 +1,652 @@
+---
+import { tournaments } from "../data/tournaments.js";
+import NumberReveal from "./NumberReveal.astro";
+---
+
+<section class="tournaments" id="tournaments">
+  <div class="container tournaments-inner">
+    <div class="tournaments-intro">
+      <p class="eyebrow tournaments-label">Tournaments</p>
+
+      <div class="tournaments-number-badge">
+        <NumberReveal value="03" class="tournaments-number" />
+      </div>
+
+      <div class="tournaments-text-group">
+        <h2 class="tournaments-heading display">Three<br />tournaments.<br />Every week.</h2>
+        <p class="tournaments-description">
+          No need to find a partner or organize a match. Choose the format that fits your level,
+          book your spot and meet us on court.
+        </p>
+      </div>
+    </div>
+
+    <ul class="tournament-list">
+      {
+        tournaments.map((t) => (
+          <li class:list={["tournament-card", { "tournament-card-active": t.active }]} data-reveal>
+            {t.active && <span class="tournament-card-accent" aria-hidden="true" />}
+
+            <div class="card-index">
+              <div class="card-index-mark">
+                <span class="card-index-number display">{t.number}</span>
+                <span class="card-index-rule" aria-hidden="true" />
+              </div>
+              <p class="card-index-caption">
+                Weekly
+                <br />
+                tournament
+              </p>
+            </div>
+
+            <div class="card-body">
+              <div class="card-title-group">
+                <h3 class="card-title display">{t.title}</h3>
+                <p class="card-subtitle">{t.subtitle}</p>
+              </div>
+              <p class="card-description">{t.description}</p>
+            </div>
+
+            <div class="card-meta-rule" aria-hidden="true" />
+
+            <dl class="card-meta">
+              {t.meta.map((m) => (
+                <div class="meta-cell">
+                  <dt class="meta-label">{m.label}</dt>
+                  <dd class="meta-value">{m.value}</dd>
+                </div>
+              ))}
+            </dl>
+
+            <div class="card-action">
+              <a class:list={["btn-pill", { "btn-pill-outline": !t.active }]} href="#">
+                <span>Join now</span>
+                <span class="btn-pill-icon" aria-hidden="true">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M0 8h16M16 8l-6-8M16 8l-6 8" />
+                  </svg>
+                </span>
+              </a>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .tournaments {
+    background: var(--c-cream);
+    padding-block: var(--s-section);
+  }
+
+  .tournaments-inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-40);
+  }
+
+  .tournaments-intro {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-16);
+  }
+
+  .tournaments-label {
+    color: var(--c-blue);
+  }
+
+  .tournaments-number-badge {
+    display: grid;
+    width: clamp(8.75rem, 6.7rem + 8.6vw, 15rem); /* 140 -> 240 */
+    height: clamp(5.75rem, 4.3rem + 6vw, 10rem); /* 92 -> 160 */
+    place-items: center;
+    background: var(--c-lime);
+  }
+
+  /* NumberReveal renders in its own component file, so its scoped CSS
+     doesn't carry the .tournaments-number-badge scope id — :global()
+     is required to reach into it from here. */
+  .tournaments-number-badge :global(.tournaments-number) {
+    font-family: var(--f-display);
+    font-weight: 900;
+    font-size: 8rem; /* 128 */
+    line-height: 0.8;
+    color: var(--c-black);
+  }
+
+  .tournaments-text-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-24);
+  }
+
+  .tournaments-heading {
+    font-size: 2.875rem; /* 46 */
+  }
+
+  .tournaments-description {
+    max-width: 32rem;
+    color: var(--c-black);
+  }
+
+  .tournament-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-16);
+  }
+
+  /* --- Card --- */
+  /* Secondary tones are per-card vars, not opacity: the blue card needs a
+     cool tint (#c7d9ff) where the light cards need warm grey — flattening
+     both to currentColor + opacity muddies the blue one. */
+  .tournament-card {
+    --card-muted: var(--c-muted);
+    --card-rule: var(--c-line);
+
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--s-20);
+    border: 1px solid var(--card-rule);
+    padding: var(--s-24);
+    color: var(--c-black);
+  }
+
+  .tournament-card-active {
+    --card-muted: var(--c-muted-on-blue);
+    --card-rule: var(--c-muted-on-blue);
+
+    position: relative;
+    /* Lets the accent bar's 1px overhang paint over the next card's
+       border-top divider — that border belongs to a later sibling, which
+       would otherwise win the paint order and cut the bar short. */
+    z-index: 1;
+    border-color: transparent;
+    background: var(--c-blue);
+    color: var(--c-white);
+  }
+
+  /* Extends 1px past the card's own bottom edge to paint over the
+     divider rule between this card and the next one, matching Figma
+     (accent bar h195 vs card h194). */
+  .tournament-card-accent {
+    position: absolute;
+    top: 0;
+    bottom: -1px;
+    left: 0;
+    display: none;
+    width: 8px;
+    background: var(--c-lime);
+  }
+
+  .card-index {
+    display: flex;
+    align-items: center;
+    gap: var(--s-12);
+  }
+
+  .card-index-mark {
+    display: flex;
+    align-items: center;
+    gap: var(--s-12);
+  }
+
+  .card-index-number {
+    font-size: 2rem;
+    line-height: 0.9;
+  }
+
+  /* Vertical hairline between number and caption on mobile; turns into a
+     horizontal underscore beneath the number on desktop. */
+  .card-index-rule {
+    width: 1px;
+    height: 1.75rem;
+    background: var(--card-rule);
+  }
+
+  .card-index-caption {
+    color: var(--card-muted);
+    font-size: var(--t-label);
+    font-weight: 600;
+    line-height: 1.3;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-16);
+  }
+
+  .card-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-8);
+  }
+
+  .card-title {
+    font-size: 2.375rem; /* 38 — matches Figma's mobile/stacked card size */
+    line-height: 0.92;
+  }
+
+  .card-subtitle {
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.3;
+  }
+
+  .card-description {
+    max-width: 30rem;
+    color: var(--card-muted);
+    font-size: var(--t-small);
+    line-height: 1.5;
+  }
+
+  /* Short dash on mobile, full-height vertical divider on desktop */
+  .card-meta-rule {
+    width: 0.625rem;
+    height: 1px;
+    background: var(--card-rule);
+  }
+
+  .card-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-12) var(--s-16);
+    margin: 0;
+  }
+
+  .meta-cell {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+  }
+
+  .meta-label,
+  .meta-value {
+    line-height: normal;
+  }
+
+  .meta-label {
+    color: var(--card-muted);
+    font-size: var(--t-label);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .meta-value {
+    margin: 0;
+    font-size: 0.9375rem;
+  }
+
+  .card-action {
+    display: flex;
+  }
+
+  .btn-pill {
+    display: inline-flex;
+    width: 100%;
+    max-width: 26rem; /* 416 — see .btn-outline in tokens.css */
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-12);
+    padding: 0.375rem 0.375rem 0.375rem var(--s-24);
+    border-radius: var(--radius-pill);
+    background: var(--c-white);
+    color: var(--c-black);
+    font-weight: 700;
+    font-size: var(--t-small);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: transform 0.25s var(--ease-out);
+  }
+
+  .btn-pill:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn-pill-outline {
+    border: 1.5px solid var(--c-black);
+  }
+
+  .btn-pill-icon {
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: none;
+    place-items: center;
+    border-radius: var(--radius-pill);
+    background: var(--c-lime);
+  }
+
+  .btn-pill-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* --- Desktop: intro column beside the list, cards as rows --- */
+  .tournaments-inner {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--s-24);
+  }
+
+  /* Fluid, not a frozen 310: at 1024 a fixed sidebar leaves the card's 1fr
+     title track only ~79px, and "AMERICANO" is unbreakable. */
+  .tournaments-intro {
+    width: clamp(15rem, 4.23rem + 16.83vw, 19.375rem); /* 240 -> 310 */
+    flex: none;
+  }
+
+  .tournament-list {
+    flex: 1;
+  }
+  
+
+  .tournament-list {
+    gap: 0;
+  }
+
+  /* Rows sit flush and are separated by a rule, so the card's own mobile
+     outline would double up on it */
+  .tournament-card {
+    border: 0;
+    /* Five children, five tracks. index/meta are fluid — they give up
+       width first as the viewport narrows, protecting the title's 1fr
+       track (see .card-title below). The 1fr track is wider than
+       .card-body's max-width on purpose — the leftover slack is the gap
+       the design puts between the copy and the vertical divider. */
+    grid-template-columns:
+      clamp(4.5rem, -4.43rem + 13.94vw, 8.125rem)
+      minmax(0, 1fr)
+      auto
+      clamp(8rem, -4.61rem + 19.71vw, 13.125rem)
+      auto;
+    align-items: start;
+    gap: var(--s-16);
+    padding: var(--s-32) var(--s-16) var(--s-32) var(--s-32);
+  }
+
+  .tournament-card + .tournament-card {
+    border-top: 1px solid var(--c-black);
+  }
+
+  .tournament-card-active .tournament-card-accent {
+    display: block;
+  }
+
+  .card-index {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s-16);
+  }
+
+  .card-index-mark {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s-8);
+  }
+
+  .card-index-number {
+    font-size: 3.5rem; /* 56 */
+    line-height: 0.82;
+  }
+
+  .card-index-rule {
+    width: 1.75rem;
+    height: 2px;
+    background: currentColor;
+  }
+
+  .card-index-caption {
+    line-height: 1.4;
+    letter-spacing: 0.1em;
+  }
+
+  .card-body {
+    max-width: 19.6875rem; /* 315 */
+    gap: var(--s-12);
+  }
+
+  /* Primary content — shrinks last, and less steeply than the secondary
+     columns above, so it's the one still standing at the low end. */
+  /* Capped below the Figma 1440 value (40): "AMERICANO 1100+" already fills
+     the flexible title track right at 1024, and 40 clips it there — the old
+     clamp grew this gradually across 1024-1440, a step the fixed breakpoint
+     system can't reproduce without a 1280-ish tier it doesn't have. */
+  .card-title {
+    font-size: 2.25rem; /* 36 */
+  }
+
+  /* Vertical divider replaces the horizontal dash between body and meta */
+  .card-meta-rule {
+    width: 1px;
+    height: 8.125rem; /* 130 */
+  }
+
+  .card-meta {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .meta-cell {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--s-12);
+    border-bottom: 1px solid var(--card-rule);
+    padding-block: 0.625rem;
+  }
+
+  .meta-cell:first-child {
+    padding-top: 0;
+  }
+
+  .meta-cell:last-child {
+    border-bottom: 0;
+  }
+
+  .meta-label {
+    /* Floor is 84, not less: "TOURNAMENT" at 12/0.1em needs it and would
+       otherwise spill past the label column. */
+    width: clamp(5.25rem, 3.4rem + 2.89vw, 6rem); /* 84 -> 96 */
+    flex: none;
+    letter-spacing: 0.1em;
+  }
+
+  .meta-value {
+    font-size: var(--t-small);
+  }
+
+  /* Stretches to the row's full height so the button lands on its centre */
+  .card-action {
+    align-self: stretch;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .btn-pill {
+    width: auto;
+  }
+
+  .btn-pill-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  
+
+  /* --- Tablet and below: intro on top, cards stacked ---
+     Restores the values the desktop rules above override, plus explicit
+     resets for the declarations that only exist there (the row grid, the
+     shared rule between rows, the active-card accent). */
+  @media screen and (max-width: 1023px) {
+    .tournaments-inner {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--s-40);
+    }
+
+    .tournaments-intro {
+      width: auto;
+      flex: initial;
+    }
+
+    .tournaments-number-badge :global(.tournaments-number) {
+      font-size: 5.75rem; /* 92 */
+    }
+
+    .tournaments-heading {
+      font-size: 2.25rem; /* 36 */
+    }
+
+    .tournament-list {
+      flex: initial;
+      gap: var(--s-16);
+    }
+
+    .tournament-card {
+      grid-template-columns: 1fr;
+      align-items: stretch;
+      gap: var(--s-20);
+      border: 1px solid var(--card-rule);
+      padding: var(--s-24);
+    }
+
+    .tournament-card + .tournament-card {
+      border-top: 1px solid var(--card-rule);
+    }
+
+    .tournament-card-active .tournament-card-accent {
+      display: none;
+    }
+
+    .card-index,
+    .card-index-mark {
+      flex-direction: row;
+      align-items: center;
+      gap: var(--s-12);
+    }
+
+    .card-index-number {
+      font-size: 2rem;
+    }
+
+    .card-index-rule {
+      width: 1px;
+      height: 1.75rem;
+      background: var(--card-rule);
+    }
+
+    .card-index-caption {
+      line-height: 1.3;
+      letter-spacing: 0.06em;
+    }
+
+    .card-body {
+      max-width: none;
+    }
+
+    .card-title {
+      font-size: 2.375rem;
+    }
+
+    .card-meta {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--s-12) var(--s-16);
+    }
+
+    .card-meta-rule {
+      width: 0.625rem;
+      height: 1px;
+    }
+
+    .meta-cell {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--s-4);
+      border-bottom: 0;
+      padding-block: 0;
+    }
+
+    .meta-label {
+      width: auto;
+      flex: initial;
+      letter-spacing: 0.08em;
+    }
+
+    .meta-value {
+      font-size: 0.9375rem;
+    }
+
+    .card-action {
+      align-self: auto;
+      align-items: stretch;
+      justify-content: flex-start;
+    }
+
+    .btn-pill {
+      width: 100%;
+    }
+
+    .btn-pill-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+  }
+
+  /* Tablet keeps the desktop's intro-beside-list split — the cards stay in
+     their stacked form, but a full-width card spreads the meta grid and the
+     pill across ~880, which reads broken. A narrower list column fixes both
+     and uses the width the centred-phone alternative would waste. */
+  @media screen and (min-width: 768px) and (max-width: 1023px) {
+    .tournaments-inner {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: var(--s-32);
+    }
+
+    .tournaments-intro {
+      width: 17.5rem; /* 280 */
+      flex: none;
+    }
+
+    .tournament-list {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+
+</style>
+
+<script>
+  // @ts-nocheck — project is plain JS
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!reduceMotion) {
+    // Scoped to this section — "[data-reveal]" alone would also match
+    // other sections' reveal targets sharing the same attribute name.
+    const section = document.querySelector(".tournaments");
+    gsap.utils.toArray(section.querySelectorAll("[data-reveal]")).forEach((card, i) => {
+      gsap.from(card, {
+        y: 32,
+        opacity: 0,
+        duration: 0.7,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: card,
+          start: "top 88%",
+        },
+        delay: (i % 3) * 0.06,
+      });
+    });
+  }
+</script>

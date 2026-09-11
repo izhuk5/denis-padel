@@ -1,0 +1,402 @@
+---
+import { Image } from "astro:assets";
+import gallery1 from "../assets/images/gallery-1.png";
+import gallery2 from "../assets/images/gallery-2.png";
+import gallery3 from "../assets/images/gallery-3.png";
+
+const ctaArrow = "M 0 8 L 16 8 M 16 8 L 10 0 M 16 8 L 10 16";
+const linkArrowPaths = ["M 12 6 L 7 12", "M 0 6 L 12 6 L 7 0"];
+
+const articles = [
+  {
+    index: "01",
+    title: "Your first padel tournament: what to expect",
+    excerpt:
+      "Everything you need to know before stepping onto the court for your first competitive event.",
+    image: gallery2,
+    alt: "Player returning a shot during a competitive match",
+  },
+  {
+    index: "02",
+    title: "Mexicano vs Americano: what's the difference?",
+    excerpt:
+      "Two popular tournament formats, two different experiences. Find out which one is right for you.",
+    image: gallery3,
+    alt: "Four players meeting at the net between games",
+  },
+  {
+    index: "03",
+    title: "How to improve your padel game faster",
+    excerpt:
+      "Why simply playing more isn't always enough — and what to focus on if you want to progress.",
+    image: gallery1,
+    alt: "Player driving a backhand during training",
+  },
+];
+---
+
+<section class="journal" id="journal">
+  <div class="journal-inner">
+    <aside class="journal-panel" data-journal-reveal>
+      <div class="panel-top">
+        <p class="eyebrow panel-label">The padel journal</p>
+
+        <h2 class="panel-heading display">
+          Play smarter.<br class="panel-break" /> Enjoy more.
+        </h2>
+
+        <p class="panel-intro">
+          Practical advice, tournament guides and stories from the Alicante padel community.
+        </p>
+      </div>
+
+      <div class="panel-cta">
+        <a class="btn-outline" href="#journal">
+          <span>View all articles</span>
+          <span class="btn-outline-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d={ctaArrow}></path>
+            </svg>
+          </span>
+        </a>
+      </div>
+    </aside>
+
+    <div class="journal-articles">
+      {
+        articles.map((article, i) => (
+          <>
+            {i > 0 && <hr class="article-divider" />}
+
+            {/* Flat children, placed by the grid at desktop: Figma moves the
+                index badge from above the photo (mobile) into the text column
+                (desktop), which no single nesting can express. */}
+            <article class="journal-article" data-journal-reveal>
+              <p class="article-badge">{article.index}</p>
+
+              <div class="article-photo">
+                <Image
+                  src={article.image}
+                  alt={article.alt}
+                  widths={[342, 460, 920]}
+                  sizes="(max-width: 1023px) calc(100vw - 3rem), 460px"
+                  format="avif"
+                  class="article-photo-img"
+                />
+              </div>
+
+              <h3 class="article-title display">{article.title}</h3>
+              <p class="article-excerpt">{article.excerpt}</p>
+
+              <a class="article-link" href="#journal">
+                <span>Read article</span>
+                <svg
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  aria-hidden="true"
+                >
+                  {linkArrowPaths.map((d) => (
+                    <path d={d} />
+                  ))}
+                </svg>
+              </a>
+            </article>
+          </>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .journal {
+    background: var(--c-white);
+    padding-block: var(--s-96);
+  }
+
+  .journal-inner {
+    display: grid;
+    max-width: var(--container);
+    grid-template-columns: 492fr 788fr;
+    align-items: stretch;
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+    gap: var(--s-32);
+  }
+
+  /* --- Black panel ---
+     A 492 column on desktop; full-bleed with its own 24 inset below. */
+  .journal-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: var(--s-32);
+    padding: var(--s-96) var(--s-48);
+    background: var(--c-black);
+  }
+
+  .panel-top {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-16);
+  }
+
+  .panel-label {
+    color: var(--c-lime);
+    font-size: var(--t-small); /* 14 */
+    letter-spacing: 0;
+  }
+
+  /* letter-spacing:0, not the global .display -0.02em — Figma sets this
+     heading at zero tracking. */
+  .panel-heading {
+    color: var(--c-white);
+    font-size: 3.5rem; /* 56 */
+    line-height: 0.96;
+    letter-spacing: 0;
+  }
+
+  /* Figma breaks the line after "Play smarter." only on desktop; below that
+     the same string is allowed to wrap on its own. */
+  .panel-break {
+    display: inline;
+  }
+
+  /* The wrapper has to stop stretching too, or width:auto on the pill still
+     fills the panel — the stacked button is deliberately full-bleed. */
+  .panel-cta {
+    align-self: flex-start;
+  }
+
+  .panel-cta .btn-outline {
+    width: auto;
+    gap: 0.875rem; /* 14 */
+    font-size: 0.9375rem; /* 15 */
+  }
+
+  .panel-intro {
+    color: var(--c-white);
+    font-size: 1rem; /* 16 */
+    line-height: 1.5;
+  }
+
+  /* --- Article list --- */
+  .journal-articles {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-24);
+  }
+
+  .article-divider {
+    width: 100%;
+    height: 1px;
+    border: 0;
+    margin: 0;
+    background: var(--c-divider);
+  }
+
+  /* Two columns: the photo spans every text row on the left, the badge,
+     title, excerpt and link stack on the right. The last row must be
+     flexible — rows are auto-sized from the text but the photo spans all
+     four and is taller, and with four auto rows the grid spreads that
+     surplus across every one of them, pushing the title far below the
+     badge. A trailing 1fr swallows it in one place. */
+  .journal-article {
+    display: grid;
+    grid-template-columns: 460fr 296fr;
+    grid-template-rows: auto auto auto 1fr;
+    align-content: start;
+    gap: var(--s-8) var(--s-32);
+  }
+
+  .article-badge {
+    grid-column: 2;
+    justify-self: start;
+    padding: var(--s-4) var(--s-8);
+    background: var(--c-lime);
+    color: var(--c-black);
+    font-weight: 700;
+    font-size: var(--t-small); /* 14 */
+    line-height: normal;
+  }
+
+  /* Explicit aspect-ratio and align-self:start, not height:100% — a spanning
+     item sized from the rows it spans while those rows size from it is the
+     circular case that collapses the track. */
+  .article-photo {
+    grid-row: 1 / -1;
+    grid-column: 1;
+    align-self: start;
+    aspect-ratio: 460 / 300;
+    overflow: hidden;
+  }
+
+  .article-photo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .article-title {
+    grid-column: 2;
+    font-size: 2.25rem; /* 36 */
+    line-height: 1;
+    letter-spacing: 0;
+  }
+
+  .article-excerpt {
+    grid-column: 2;
+    font-size: 1.125rem; /* 18 */
+    line-height: 1.4;
+  }
+
+  .article-link {
+    display: flex;
+    grid-column: 2;
+    align-items: center;
+    align-self: start;
+    justify-self: start;
+    gap: var(--s-8);
+    font-weight: 700;
+    font-size: var(--t-small); /* 14 */
+    line-height: normal;
+  }
+
+  .article-link svg {
+    width: 12px;
+    height: 12px;
+    transition: transform 0.25s var(--ease-out);
+  }
+
+  .article-link:hover svg {
+    transform: translateX(4px);
+  }
+
+  /* --- Tablet and below: panel on top, articles stacked ---
+     Held to a readable measure rather than stretched: left full width a
+     342/230 photo would render over 700 tall at 1023. */
+  @media screen and (max-width: 1023px) {
+    .journal {
+      padding-block: var(--s-section);
+    }
+
+    .journal-inner {
+      display: flex;
+      max-width: none;
+      flex-direction: column;
+      padding-inline: 0;
+      gap: var(--s-32);
+    }
+
+    .journal-panel {
+      gap: var(--s-24);
+      padding-block: var(--s-40);
+      padding-inline: max(var(--gutter), calc((100% - 42rem) / 2));
+    }
+
+    .panel-heading {
+      font-size: 2.5rem; /* 40 */
+    }
+
+    .panel-break {
+      display: none;
+    }
+
+    .panel-cta {
+      align-self: stretch;
+    }
+
+    .panel-cta .btn-outline {
+      width: 100%;
+      gap: var(--s-12);
+      font-size: 1rem; /* 16 */
+    }
+
+    .journal-articles {
+      max-width: calc(42rem + var(--gutter) * 2);
+      margin-inline: auto;
+      padding-inline: var(--gutter);
+    }
+
+    .journal-article {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .article-photo {
+      width: 100%;
+      margin-top: var(--s-12);
+      aspect-ratio: 342 / 230;
+    }
+
+    .article-title {
+      margin-top: var(--s-16);
+      font-size: 1.75rem; /* 28 */
+    }
+
+    .article-excerpt {
+      margin-top: var(--s-8);
+      font-size: 1rem; /* 16 */
+    }
+
+    .article-link {
+      margin-top: var(--s-16);
+    }
+  }
+
+  /* Two article cards across instead of one centred column: it fills the
+     width the phone layout leaves empty while keeping each line short. The
+     panel above stays full-bleed with its own content centred. */
+  @media screen and (min-width: 768px) and (max-width: 1023px) {
+    /* Panel content lines up with the article grid below it, so it drops the
+       centring cap the single-column tier uses. */
+    .journal-panel {
+      padding-inline: var(--gutter);
+    }
+
+    .journal-articles {
+      display: grid;
+      max-width: none;
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+      gap: var(--s-32) var(--s-24);
+      padding-inline: var(--gutter);
+    }
+
+    /* The rule between rows belongs to the single-column list only */
+    .article-divider {
+      display: none;
+    }
+
+    .panel-cta .btn-outline {
+      width: fit-content;
+    }
+  }
+
+</style>
+
+<script>
+  // @ts-nocheck — project is plain JS
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!reduceMotion) {
+    const section = document.querySelector(".journal");
+
+    gsap.from(section.querySelectorAll("[data-journal-reveal]"), {
+      y: 24,
+      opacity: 0,
+      duration: 0.7,
+      stagger: 0.12,
+      ease: "power3.out",
+      scrollTrigger: { trigger: section, start: "top 75%" },
+    });
+  }
+</script>

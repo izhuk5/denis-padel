@@ -1,0 +1,357 @@
+---
+const links = [
+  { label: "Tournaments", href: "#tournaments" },
+  { label: "Training", href: "#training" },
+  { label: "Community", href: "#community" },
+  { label: "Gallery", href: "#gallery" },
+  { label: "Blog", href: "#journal" },
+];
+---
+
+<nav class="nav" aria-label="Main">
+  <div class="nav-row">
+    <a class="nav-logo" href="#top">Alicante Paddle</a>
+
+    <ul class="nav-menu">
+      {
+        links.map((link) => (
+          <li>
+            <a class="nav-link" href={link.href}>
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <button
+      class="nav-burger"
+      type="button"
+      aria-label="Open menu"
+      aria-expanded="false"
+      aria-controls="nav-overlay"
+      data-menu-open
+    >
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+
+  <div class="nav-divider"></div>
+</nav>
+
+<div class="nav-menu-panel" id="nav-overlay" hidden data-menu-panel>
+  <div class="nav-menu-head">
+    <span class="nav-menu-logo">Alicante Paddle</span>
+    <button class="nav-menu-close" type="button" aria-label="Close menu" data-menu-close>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+
+  <ul class="nav-menu-list">
+    {
+      links.map((link) => (
+        <li class="nav-menu-item">
+          <a class="nav-menu-link display" href={link.href} data-menu-link>
+            {link.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <a class="nav-menu-cta" href="#footer">
+    <span>Contact Denis</span>
+    <span class="nav-menu-cta-icon" aria-hidden="true">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M0 8h16M16 8l-6-8M16 8l-6 8"></path>
+      </svg>
+    </span>
+  </a>
+</div>
+
+<style>
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-16);
+  }
+
+  .nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-24);
+  }
+
+  .nav-logo {
+    font-family: var(--f-logo);
+    font-size: 1.75rem; /* 28 */
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: var(--c-white);
+  }
+
+  .nav-menu {
+    display: flex;
+    align-items: center;
+    gap: clamp(1.5rem, 0.6rem + 3vw, 3rem);
+  }
+
+  .nav-link {
+    font-size: var(--t-small);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--c-white);
+    transition: color 0.25s var(--ease-out);
+  }
+
+  .nav-link:hover {
+    color: var(--c-lime);
+  }
+
+  .nav-burger {
+    display: none;
+    width: 40px;
+    height: 40px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1.5px solid var(--c-white);
+    border-radius: var(--radius-pill);
+  }
+
+  .nav-burger span {
+    width: 16px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--c-white);
+  }
+
+  .nav-divider {
+    height: 1px;
+    background: var(--c-white);
+  }
+
+  /* Fullscreen overlay menu — z-index is intentionally very high since this
+     must sit above every section on the page, not just the hero it lives in */
+  .nav-menu-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    /* Top padding matches .hero-inner's mobile padding-top exactly, so the
+       logo doesn't shift vertically during the crossfade either. */
+    padding: clamp(1.75rem, 1.55rem + 0.85vw, 2rem) var(--gutter) var(--s-40);
+    background: var(--c-black);
+    opacity: 0;
+    transition: opacity 0.35s var(--ease-out);
+  }
+
+  .nav-menu-panel[data-open] {
+    opacity: 1;
+  }
+
+  /* [hidden] loses to the class selector above without this — the panel
+     would stay in the layout (opacity: 0 but still catching clicks) */
+  .nav-menu-panel[hidden] {
+    display: none;
+  }
+
+  .nav-menu-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* Must match .nav-logo's size exactly — the overlay fades in over the
+     real nav bar (0.35s), so any size mismatch reads as the logo jumping
+     between two sizes mid-transition. */
+  .nav-menu-logo {
+    font-family: var(--f-logo);
+    font-size: 1.75rem; /* 28, matches .nav-logo above */
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: var(--c-white);
+  }
+
+  .nav-menu-close {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border: 1.5px solid var(--c-white);
+    border-radius: var(--radius-pill);
+  }
+
+  .nav-menu-close span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--c-white);
+  }
+
+  .nav-menu-close span:first-child {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  .nav-menu-close span:last-child {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+
+  .nav-menu-list {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--s-12);
+  }
+
+  .nav-menu-link {
+    display: inline-block;
+    font-size: 3.5rem; /* 56 */
+    color: var(--c-white);
+    transition: color 0.25s var(--ease-out);
+  }
+
+  .nav-menu-link:hover {
+    color: var(--c-lime);
+  }
+
+  .nav-menu-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-16);
+    padding: var(--s-8) var(--s-8) var(--s-8) var(--s-24);
+    border-radius: var(--radius-pill);
+    background: var(--c-white);
+    color: var(--c-black);
+    font-weight: 700;
+    font-size: 1.125rem;
+    text-transform: uppercase;
+  }
+
+  .nav-menu-cta-icon {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    border-radius: var(--radius-pill);
+    background: var(--c-lime);
+  }
+
+  .nav-menu-cta-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* The burger panel only exists below the desktop tier. [hidden] still wins
+     over the rule below it — an attribute selector outranks a bare class —
+     so the panel stays out of the layout until it is opened. */
+  .nav-menu-panel {
+    display: none;
+  }
+
+  @media screen and (max-width: 1023px) {
+    .nav-menu {
+      display: none;
+    }
+
+    .nav-burger {
+      display: flex;
+    }
+
+    .nav-menu-panel {
+      display: flex;
+    }
+
+    .nav-logo,
+    .nav-menu-logo {
+      font-size: 1.5rem; /* 24 */
+    }
+  }
+
+  @media screen and (max-width: 767px) {
+    .nav-menu-link {
+      font-size: 3rem; /* 48 */
+    }
+
+    .nav-logo,
+    .nav-menu-logo {
+      font-size: 1.25rem; /* 20 */
+    }
+  }
+
+  @media screen and (max-width: 479px) {
+    .nav-menu-link {
+      font-size: 2.5rem; /* 40 */
+    }
+  }
+</style>
+
+<script>
+  // @ts-nocheck — project is plain JS
+  const panel = document.querySelector("[data-menu-panel]");
+  const openBtn = document.querySelector("[data-menu-open]");
+  const closeBtn = document.querySelector("[data-menu-close]");
+  const links = document.querySelectorAll("[data-menu-link]");
+
+  let scrollY = 0;
+
+  // `overflow: hidden` on body is not enough: Lenis drives scroll itself
+  // (independent of native page scroll) and iOS Safari can still rubber-band
+  // the body via touch even while it's set. Locking position: fixed with the
+  // scroll offset preserved in `top` is the reliable cross-browser fix, paired
+  // with stopping Lenis so its own raf loop doesn't fight the lock.
+  function lockScroll() {
+    scrollY = window.scrollY;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    window.__lenis?.stop();
+  }
+
+  function unlockScroll() {
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.left = "";
+    document.body.style.right = "";
+    window.scrollTo(0, scrollY);
+    window.__lenis?.start();
+  }
+
+  function openMenu() {
+    panel.hidden = false;
+    // next frame so the transition has a starting state to animate from
+    requestAnimationFrame(() => panel.setAttribute("data-open", ""));
+    openBtn.setAttribute("aria-expanded", "true");
+    lockScroll();
+  }
+
+  function closeMenu() {
+    panel.removeAttribute("data-open");
+    openBtn.setAttribute("aria-expanded", "false");
+    unlockScroll();
+    setTimeout(() => {
+      panel.hidden = true;
+    }, 350);
+  }
+
+  openBtn?.addEventListener("click", openMenu);
+  closeBtn?.addEventListener("click", closeMenu);
+  links.forEach((link) => link.addEventListener("click", closeMenu));
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !panel.hidden) closeMenu();
+  });
+</script>

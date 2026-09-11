@@ -1,0 +1,65 @@
+---
+// Splits a short string (digits, letters, punctuation) into masked
+// characters that slide in on scroll, alternating direction per character:
+// even index rises from below, odd index drops from above.
+const { value, class: className = "" } = Astro.props;
+const chars = String(value).split("");
+---
+
+<span class={`number-reveal ${className}`} data-number-reveal aria-label={value}>
+  {
+    chars.map((char, i) => (
+      <span class="number-reveal-char" aria-hidden="true">
+        <span class="number-reveal-inner" data-from={i % 2 === 0 ? "below" : "above"}>
+          {char}
+        </span>
+      </span>
+    ))
+  }
+</span>
+
+<style>
+  .number-reveal {
+    display: inline-flex;
+  }
+
+  .number-reveal-char {
+    display: inline-block;
+    overflow: hidden;
+    /* Symmetric padding/margin keeps descenders (if any) from clipping
+       while the mask still hides the character before it animates in */
+    padding-block: 0.06em;
+    margin-block: -0.06em;
+  }
+
+  .number-reveal-inner {
+    display: inline-block;
+  }
+</style>
+
+<script>
+  // @ts-nocheck — project is plain JS
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!reduceMotion) {
+    document.querySelectorAll("[data-number-reveal]").forEach((wrapper) => {
+      const chars = wrapper.querySelectorAll(".number-reveal-inner");
+
+      gsap.from(chars, {
+        yPercent: (i, target) => (target.dataset.from === "below" ? 110 : -110),
+        duration: 0.8,
+        stagger: 0.08,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: wrapper,
+          start: "top 88%",
+        },
+      });
+    });
+  }
+</script>
