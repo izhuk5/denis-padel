@@ -1,4 +1,6 @@
 ---
+import navLogo from "../assets/images/nav-logo-text.svg";
+
 const links = [
   { label: "Tournaments", href: "#tournaments" },
   { label: "Training", href: "#training" },
@@ -10,7 +12,9 @@ const links = [
 
 <nav class="nav" aria-label="Main">
   <div class="nav-row">
-    <a class="nav-logo" href="#top">Alicante Paddle</a>
+    <a class="nav-logo" href="#top">
+      <img src={navLogo.src} alt="Alicante Paddle" class="nav-logo-img" />
+    </a>
 
     <ul class="nav-menu">
       {
@@ -42,7 +46,7 @@ const links = [
 
 <div class="nav-menu-panel" id="nav-overlay" hidden data-menu-panel>
   <div class="nav-menu-head">
-    <span class="nav-menu-logo">Alicante Paddle</span>
+    <img src={navLogo.src} alt="Alicante Paddle" class="nav-menu-logo" />
     <button class="nav-menu-close" type="button" aria-label="Close menu" data-menu-close>
       <span></span>
       <span></span>
@@ -86,12 +90,13 @@ const links = [
   }
 
   .nav-logo {
-    font-family: var(--f-logo);
-    font-size: 1.75rem; /* 28 */
-    line-height: 1.05;
-    letter-spacing: -0.01em;
-    text-transform: uppercase;
-    color: var(--c-white);
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-logo-img {
+    height: 0.875rem; /* 14, the svg's native viewBox height */
+    width: auto;
   }
 
   .nav-menu {
@@ -173,12 +178,8 @@ const links = [
      real nav bar (0.35s), so any size mismatch reads as the logo jumping
      between two sizes mid-transition. */
   .nav-menu-logo {
-    font-family: var(--f-logo);
-    font-size: 1.75rem; /* 28, matches .nav-logo above */
-    line-height: 1.05;
-    letter-spacing: -0.01em;
-    text-transform: uppercase;
-    color: var(--c-white);
+    height: 0.875rem; /* 14, matches .nav-logo-img above */
+    width: auto;
   }
 
   .nav-menu-close {
@@ -274,9 +275,9 @@ const links = [
       display: flex;
     }
 
-    .nav-logo,
+    .nav-logo-img,
     .nav-menu-logo {
-      font-size: 1.5rem; /* 24 */
+      height: 0.75rem; /* 12, scaled from the 14 base at the same 24/28 ratio as before */
     }
   }
 
@@ -285,9 +286,9 @@ const links = [
       font-size: 3rem; /* 48 */
     }
 
-    .nav-logo,
+    .nav-logo-img,
     .nav-menu-logo {
-      font-size: 1.25rem; /* 20 */
+      height: 0.625rem; /* 10, scaled from the 14 base at the same 20/28 ratio as before */
     }
   }
 

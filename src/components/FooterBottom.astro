@@ -1,4 +1,6 @@
 ---
+import footerLogo from "../assets/images/footer-logo.svg";
+
 const navLinks = [
   { label: "Home", href: "#hero" },
   { label: "Tournaments", href: "#tournaments" },
@@ -14,7 +16,7 @@ const year = new Date().getFullYear();
 <footer class="footer-bottom">
   <div class="container footer-bottom-inner">
     <div class="footer-bottom-row">
-      <p class="footer-logo display">Alicante<br />Paddle</p>
+      <img src={footerLogo.src} alt="Alicante Paddle" class="footer-logo" />
 
       <nav class="footer-nav" aria-label="Footer">
         {/* Column-major on mobile (Home/Tournaments/Training, then
@@ -67,11 +69,9 @@ const year = new Date().getFullYear();
     gap: var(--s-32);
   }
 
-  /* No negative tracking here, unlike the global .display */
   .footer-logo {
-    font-size: 1.25rem; /* 20 */
-    line-height: 1.1;
-    letter-spacing: 0;
+    height: 2.25rem; /* 36, the svg's native viewBox height */
+    width: auto;
   }
 
   /* line-height:normal on the list, not just the links: the <li> boxes
@@ -159,8 +159,7 @@ const year = new Date().getFullYear();
     }
 
     .footer-logo {
-      font-size: 2rem; /* 32 */
-      line-height: 0.96;
+      height: 3.625rem; /* 58, scaled at the same ratio as the old 32/20 text sizing */
     }
 
     .footer-nav {

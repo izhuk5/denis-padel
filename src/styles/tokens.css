@@ -89,7 +89,6 @@ html {
   /* Type families */
   --f-display: "Roboto Condensed", "Arial Narrow", sans-serif;
   --f-text: "Archivo", system-ui, -apple-system, sans-serif;
-  --f-logo: "Archivo Black", "Archivo", system-ui, sans-serif;
 
   /* Type scale — stepped per breakpoint, not fluid. Each token is the
      desktop (1440) value here; --t-hero/--t-h2/--t-h3/--t-lead/--t-body are
@@ -157,6 +156,49 @@ html {
     --t-h2: 2.5rem; /* 40 */
     --t-h3: 1.75rem; /* 28 */
   }
+}
+
+/* Self-hosted subset fonts — only the weights actually used on the site,
+   glyphs trimmed to Latin. Archivo Black stays on Google Fonts for now
+   (see Layout.astro) until the logo's svg replacement lands. */
+@font-face {
+  font-family: "Archivo";
+  src: url("../assets/fonts/Archivo-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Archivo";
+  src: url("../assets/fonts/Archivo-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Archivo";
+  src: url("../assets/fonts/Archivo-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Archivo";
+  src: url("../assets/fonts/Archivo-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto Condensed";
+  src: url("../assets/fonts/RobotoCondensed-Black.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
 }
 
 *,
