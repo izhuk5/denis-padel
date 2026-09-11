@@ -1,5 +1,6 @@
 ---
 import "../styles/tokens.css";
+import robotoCondensedBlackUrl from "../assets/fonts/RobotoCondensed-Black.woff2";
 
 const {
   title = "Alicante Paddle — padel tournaments, training and community",
@@ -19,6 +20,12 @@ const {
     <!-- Archivo and Roboto Condensed are self-hosted via @font-face in
          tokens.css — the logo (the only Archivo Black user) is now an svg,
          so no Google Fonts link is needed at all. -->
+
+    <!-- Roboto Condensed Black is the hero heading's font, and the hero
+         heading is the page's LCP element — without this the browser only
+         discovers the font after parsing tokens.css, adding ~550ms of
+         render delay before that text can paint. -->
+    <link rel="preload" href={robotoCondensedBlackUrl} as="font" type="font/woff2" crossorigin />
   </head>
   <body>
     <slot />

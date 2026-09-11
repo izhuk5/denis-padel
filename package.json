@@ -22,6 +22,7 @@
     "esbuild": true
   },
   "devDependencies": {
+    "lighthouse": "^13.4.1",
     "playwright": "^1.63.0"
   }
 }
