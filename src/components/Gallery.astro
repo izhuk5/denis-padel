@@ -214,10 +214,6 @@ const slides = [...photos, ...photos].map((photo, i) => ({
 
 <script>
   // @ts-nocheck — project is plain JS
-  import Swiper from "swiper";
-  import { Navigation, Keyboard } from "swiper/modules";
-  import "swiper/css";
-
   import { gsap } from "gsap";
   import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -225,26 +221,44 @@ const slides = [...photos, ...photos].map((photo, i) => ({
 
   const section = document.querySelector(".gallery");
 
-  new Swiper(section.querySelector("[data-gallery-swiper]"), {
-    modules: [Navigation, Keyboard],
-    slidesPerView: 1,
-    spaceBetween: 16,
-    // Figma's 421 slide at 1440 is exactly (1312 - 2 gaps) / 3. Two across in
-    // between, because three at 768 would leave each one ~215 wide.
-    // Swiper's breakpoints are min-width, so these are the mobile-first
-    // mirrors of the CSS max-width tiers: 767 -> 1 up, 1023 -> 2 up.
-    breakpoints: {
-      768: { slidesPerView: 2, spaceBetween: 24 },
-      1024: { slidesPerView: 3, spaceBetween: 24 },
+  // Swiper (JS + CSS, ~72KB) is only needed once the carousel is actually
+  // about to be seen — this is the last section on the page, so loading it
+  // eagerly on every visit was pure dead weight up front. rootMargin starts
+  // the fetch ~300px before the section enters view, so by the time it's
+  // visible the carousel is already interactive.
+  const swiperObserver = new IntersectionObserver(
+    (entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      swiperObserver.disconnect();
+
+      Promise.all([import("swiper"), import("swiper/modules"), import("swiper/css")]).then(
+        ([{ default: Swiper }, { Navigation, Keyboard }]) => {
+          new Swiper(section.querySelector("[data-gallery-swiper]"), {
+            modules: [Navigation, Keyboard],
+            slidesPerView: 1,
+            spaceBetween: 16,
+            // Figma's 421 slide at 1440 is exactly (1312 - 2 gaps) / 3. Two across
+            // in between, because three at 768 would leave each one ~215 wide.
+            // Swiper's breakpoints are min-width, so these are the mobile-first
+            // mirrors of the CSS max-width tiers: 767 -> 1 up, 1023 -> 2 up.
+            breakpoints: {
+              768: { slidesPerView: 2, spaceBetween: 24 },
+              1024: { slidesPerView: 3, spaceBetween: 24 },
+            },
+            navigation: {
+              prevEl: section.querySelector("[data-gallery-prev]"),
+              nextEl: section.querySelector("[data-gallery-next]"),
+            },
+            keyboard: { enabled: true, onlyInViewport: true },
+            loop: true,
+            watchOverflow: true,
+          });
+        },
+      );
     },
-    navigation: {
-      prevEl: section.querySelector("[data-gallery-prev]"),
-      nextEl: section.querySelector("[data-gallery-next]"),
-    },
-    keyboard: { enabled: true, onlyInViewport: true },
-    loop: true,
-    watchOverflow: true,
-  });
+    { rootMargin: "300px" },
+  );
+  swiperObserver.observe(section);
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
