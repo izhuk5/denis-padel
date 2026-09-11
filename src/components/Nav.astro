@@ -102,7 +102,7 @@ const links = [
   .nav-menu {
     display: flex;
     align-items: center;
-    gap: clamp(1.5rem, 0.6rem + 3vw, 3rem);
+    gap: 3rem; /* 48 — this row is hidden below 1024, so it needs no steps */
   }
 
   .nav-link {
@@ -152,7 +152,7 @@ const links = [
     flex-direction: column;
     /* Top padding matches .hero-inner's mobile padding-top exactly, so the
        logo doesn't shift vertically during the crossfade either. */
-    padding: clamp(1.75rem, 1.55rem + 0.85vw, 2rem) var(--gutter) var(--s-40);
+    padding: 2rem var(--gutter) var(--s-40); /* 32, stepped to 28 at 479 */
     background: var(--c-black);
     opacity: 0;
     transition: opacity 0.35s var(--ease-out);
@@ -295,6 +295,11 @@ const links = [
   @media screen and (max-width: 479px) {
     .nav-menu-link {
       font-size: 2.5rem; /* 40 */
+    }
+
+    /* Matches .hero-inner's padding-top at this breakpoint — see Hero.astro. */
+    .nav-menu-panel {
+      padding-top: 1.75rem; /* 28 */
     }
   }
 </style>

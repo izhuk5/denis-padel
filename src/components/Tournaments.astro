@@ -99,8 +99,8 @@ import NumberReveal from "./NumberReveal.astro";
 
   .tournaments-number-badge {
     display: grid;
-    width: clamp(8.75rem, 6.7rem + 8.6vw, 15rem); /* 140 -> 240 */
-    height: clamp(5.75rem, 4.3rem + 6vw, 10rem); /* 92 -> 160 */
+    width: 15rem; /* 240 — stepped in the queries below */
+    height: 10rem; /* 160 */
     place-items: center;
     background: var(--c-lime);
   }
@@ -335,10 +335,11 @@ import NumberReveal from "./NumberReveal.astro";
     gap: var(--s-24);
   }
 
-  /* Fluid, not a frozen 310: at 1024 a fixed sidebar leaves the card's 1fr
-     title track only ~79px, and "AMERICANO" is unbreakable. */
+  /* A percentage, not a frozen 310: at 1024 a fixed sidebar leaves the card's
+     1fr title track only ~79px, and "AMERICANO" is unbreakable. 23.5% lands on
+     the design's 310 at 1440 and gives ground as the viewport narrows. */
   .tournaments-intro {
-    width: clamp(15rem, 4.23rem + 16.83vw, 19.375rem); /* 240 -> 310 */
+    width: 23.5%;
     flex: none;
   }
 
@@ -361,10 +362,10 @@ import NumberReveal from "./NumberReveal.astro";
        .card-body's max-width on purpose — the leftover slack is the gap
        the design puts between the copy and the vertical divider. */
     grid-template-columns:
-      clamp(4.5rem, -4.43rem + 13.94vw, 8.125rem)
+      13.5%
       minmax(0, 1fr)
       auto
-      clamp(8rem, -4.61rem + 19.71vw, 13.125rem)
+      22%
       auto;
     align-items: start;
     gap: var(--s-16);
@@ -450,9 +451,10 @@ import NumberReveal from "./NumberReveal.astro";
   }
 
   .meta-label {
-    /* Floor is 84, not less: "TOURNAMENT" at 12/0.1em needs it and would
-       otherwise spill past the label column. */
-    width: clamp(5.25rem, 3.4rem + 2.89vw, 6rem); /* 84 -> 96 */
+    /* 84, not more: "TOURNAMENT" at 12/0.1em needs exactly this much and the
+       meta column is only ~126 wide at 1024 — anything wider starves the
+       value beside it. */
+    width: 5.25rem; /* 84 */
     flex: none;
     letter-spacing: 0.1em;
   }
@@ -492,6 +494,11 @@ import NumberReveal from "./NumberReveal.astro";
     .tournaments-intro {
       width: auto;
       flex: initial;
+    }
+
+    .tournaments-number-badge {
+      width: 12rem; /* 192 */
+      height: 8rem; /* 128 */
     }
 
     .tournaments-number-badge :global(.tournaments-number) {
@@ -594,6 +601,13 @@ import NumberReveal from "./NumberReveal.astro";
     .btn-pill-icon {
       width: 2.5rem;
       height: 2.5rem;
+    }
+  }
+
+  @media screen and (max-width: 479px) {
+    .tournaments-number-badge {
+      width: 8.75rem; /* 140 */
+      height: 5.75rem; /* 92 */
     }
   }
 

@@ -8,12 +8,13 @@ not introduce values outside it.
 @media screen and (max-width: 767px)    mobile landscape and below
 @media screen and (max-width: 479px)    mobile portrait
 
-Type scale is stepped per breakpoint too (see --t-* below, redefined at
-:root inside each query — that part of a custom property's value CAN
-change per media query, unlike a breakpoint number itself). Spacing and
-gutter remain fluid via clamp(): they're continuous by nature (padding,
-gaps), not the kind of thing that reads as a "jump" at a breakpoint the
-   way a font size does. */
+Nothing on this site is fluid via clamp() any more — type scale, spacing
+and gutter are all stepped at the three breakpoints above (see the --t-*
+and --s-section/--gutter blocks below, redefined at :root inside each
+query — that part of a custom property's value CAN change per media
+query, unlike a breakpoint number itself). The only thing that still
+scales continuously is the root font size, which the block right below
+interpolates — every rem on the page rides on that. */
 /* Fluid root scaling — interpolates html's own font-size continuously with
    viewport width, so every rem-based value on the page (not just font-size
    declarations) scales with it: spacing, --container, --gutter, the stepped
@@ -115,21 +116,21 @@ html {
   --s-96: 6rem;
   --s-120: 7.5rem;
 
-  /* Fluid section rhythm */
-  --s-section: clamp(4rem, 2.1rem + 7.8vw, 7.5rem); /* 64 -> 120 */
+  /* Section rhythm — stepped per breakpoint, see the queries below */
+  --s-section: 7.5rem; /* 120 */
 
   /* Layout */
   --container: 90rem; /* 1440 */
-  --gutter: clamp(1.5rem, 0.6rem + 3.7vw, 4rem); /* 24 -> 64 */
+  --gutter: 4rem; /* 64 — stepped per breakpoint below */
 
   --radius-pill: 999px;
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Type scale steps. Custom properties CAN be redefined inside a media query
-   at :root — this is the one place fluid clamp() is replaced by a plain
-   cascade, so every var(--t-*) consumer below updates automatically. */
+/* Type and spacing steps. Custom properties CAN be redefined inside a media
+   query at :root, so every var(--t-*) / var(--s-section) / var(--gutter)
+   consumer below updates by plain cascade. */
 @media screen and (max-width: 1023px) {
   :root {
     --t-hero: 6.25rem; /* 100 */
@@ -137,6 +138,9 @@ html {
     --t-h3: 2.75rem; /* 44 */
     --t-lead: 1.125rem; /* 18 */
     --t-body: 1.0625rem; /* 17 */
+
+    --s-section: 6rem; /* 96 */
+    --gutter: 3rem; /* 48 */
   }
 }
 
@@ -147,6 +151,9 @@ html {
     --t-h3: 2.25rem; /* 36 */
     --t-lead: 1rem; /* 16 */
     --t-body: 1rem; /* 16 */
+
+    --s-section: 5rem; /* 80 */
+    --gutter: 2rem; /* 32 */
   }
 }
 
@@ -155,6 +162,9 @@ html {
     --t-hero: 3.875rem; /* 62 */
     --t-h2: 2.5rem; /* 40 */
     --t-h3: 1.75rem; /* 28 */
+
+    --s-section: 4rem; /* 64 */
+    --gutter: 1.5rem; /* 24 */
   }
 }
 
@@ -315,10 +325,10 @@ svg {
   align-items: center;
   justify-content: space-between;
   gap: var(--s-16);
-  /* 6/6/6/24 at 390 -> 8/8/8/32 at 1440, so the pill is 52 tall on mobile
-     and 64 on desktop, matching both hero and training CTAs */
-  padding: clamp(0.375rem, 0.329rem + 0.19vw, 0.5rem);
-  padding-left: clamp(1.5rem, 1.314rem + 0.76vw, 2rem);
+  /* Desktop is the "large" button: 8/8/8/32 around a 48 icon = 64 tall.
+     The tablet query below drops it to "small": 6.5/6.5/6.5/24 + 40 = 53. */
+  padding: 0.5rem;
+  padding-left: 2rem;
   border-radius: var(--radius-pill);
   font-size: var(--t-body); /* 18 -> 17 -> 16, same steps as body copy */
   font-weight: 700;
@@ -335,8 +345,8 @@ svg {
 
 .btn-icon {
   display: grid;
-  width: clamp(40px, 36px + 1vw, 48px);
-  height: clamp(40px, 36px + 1vw, 48px);
+  width: 48px;
+  height: 48px;
   flex: none;
   place-items: center;
   border-radius: var(--radius-pill);
@@ -350,6 +360,20 @@ svg {
 .btn-icon svg {
   width: 16px;
   height: 16px;
+}
+
+/* The pill's "small" step — the icon is the tallest thing inside, so it and
+   the vertical padding together set the height: 40 + 6.5*2 = 53. */
+@media screen and (max-width: 1023px) {
+  .btn {
+    padding: 0.40625rem; /* 6.5 */
+    padding-left: 1.5rem; /* 24 */
+  }
+
+  .btn-icon {
+    width: 40px;
+    height: 40px;
+  }
 }
 
 .btn-light {
