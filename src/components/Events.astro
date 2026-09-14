@@ -1,17 +1,12 @@
 ---
 import { Image } from "astro:assets";
-import eventImg from "../assets/images/event-sunset.png";
+import { content, image } from "../lib/content.js";
 
 const arrowPath = "M0 8h16M16 8l-6-8M16 8l-6 8";
 
-const event = {
-  day: "28",
-  month: "Sep",
-  city: "Alicante",
-  title: "Sunset padel social",
-  description:
-    "An evening of relaxed matches, music and time together with the Alicante Paddle community.",
-};
+/* The section shows a single featured event; the admin panel keeps the rest
+   of the list around and flags exactly one as featured. */
+const event = content.events.find((item) => item.featured) ?? content.events[0];
 ---
 
 <section class="events" id="events">
@@ -45,8 +40,8 @@ const event = {
 
       <div class="event-photo">
         <Image
-          src={eventImg}
-          alt="Padel players sitting courtside at sunset after a social match"
+          src={image(event.image)}
+          alt={event.imageAlt}
           widths={[720, 1224]}
           sizes="(max-width: 1023px) 100vw, 43vw"
           format="avif"
@@ -60,8 +55,8 @@ const event = {
         <p class="event-meta">{event.day} {event.month} · {event.city}</p>
         <p class="event-description">{event.description}</p>
 
-        <a class="btn-outline" href="#contact">
-          <span>View event</span>
+        <a class="btn-outline" href={event.buttonUrl}>
+          <span>{event.buttonLabel}</span>
           <span class="btn-outline-icon" aria-hidden="true">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
               <path d={arrowPath}></path>

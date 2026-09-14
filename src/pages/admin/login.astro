@@ -1,0 +1,80 @@
+---
+import "../../styles/admin.css";
+import { isPasswordCorrect, setSessionCookie } from "../../lib/auth.js";
+import { throttle } from "../../lib/throttle.js";
+
+export const prerender = false;
+
+/* Only same-site admin paths are accepted as a redirect target. Without this
+   check, /admin/login?next=https://evil.example turns the login form into an
+   open redirect that borrows this site's name for a phishing page. */
+function safeNext(value) {
+  return typeof value === "string" && /^\/admin(\/|$)/.test(value) && !value.startsWith("//")
+    ? value
+    : "/admin";
+}
+
+let error = null;
+let next = safeNext(Astro.url.searchParams.get("next"));
+
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  next = safeNext(form.get("next"));
+
+  const gate = throttle(Astro.clientAddress);
+
+  if (!gate.allowed) {
+    error = `Слишком много попыток. Попробуйте через ${gate.retryInMinutes} мин.`;
+  } else if (isPasswordCorrect(form.get("password"))) {
+    gate.reset();
+    setSessionCookie(Astro.cookies);
+    return Astro.redirect(next);
+  } else {
+    gate.fail();
+    error = "Неверный пароль.";
+  }
+}
+---
+
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Вход — Админка Alicante Paddle</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+
+  <body class="admin admin-login-page">
+    <main class="admin-login">
+      <div class="admin-login-card">
+        <span class="admin-brand-mark">AP</span>
+        <h1 class="admin-login-title">Вход в админку</h1>
+        <p class="admin-login-sub">Alicante Paddle</p>
+
+        <form method="POST" class="admin-login-form">
+          <input type="hidden" name="next" value={next} />
+
+          <label class="af-field af-full">
+            <span class="af-label">Пароль</span>
+            <input
+              class="af-input"
+              type="password"
+              name="password"
+              autocomplete="current-password"
+              required
+              autofocus
+            />
+          </label>
+
+          {error && <p class="admin-login-error" role="alert">{error}</p>}
+
+          <button type="submit" class="admin-btn admin-btn-primary admin-login-submit">
+            Войти
+          </button>
+        </form>
+      </div>
+    </main>
+  </body>
+</html>

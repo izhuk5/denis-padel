@@ -1,0 +1,120 @@
+---
+import "../styles/admin.css";
+import { sections } from "../data/schema.js";
+import { content, imageChoices } from "../lib/content.js";
+
+const { section = null, title } = Astro.props;
+
+const active = sections.find((item) => item.key === section) ?? null;
+
+/* The client bundle cannot import content.json's images directly — in a
+   browser script Vite hands back a bare URL string, not the width/height
+   metadata the picker needs. So the whole payload is serialised here, where
+   astro:assets has already resolved it, and parsed on the client. */
+const payload = JSON.stringify({
+  sections,
+  baseline: content,
+  imageChoices,
+}).replace(/</g, "\\u003c");
+---
+
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} — Админка Alicante Paddle</title>
+
+    <!-- The admin is a private tool, not a page anyone should reach from
+         search. robots.txt blocks crawling; this blocks indexing if a link
+         to it ever leaks. -->
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+
+  <body class="admin">
+    <a class="admin-skip" href="#admin-main">К содержимому</a>
+
+    <div class="admin-shell">
+      <aside class="admin-sidebar">
+        <a class="admin-brand" href="/admin">
+          <span class="admin-brand-mark">AP</span>
+          <span class="admin-brand-text">Админка</span>
+        </a>
+
+        <nav class="admin-nav" aria-label="Разделы">
+          {
+            sections.map((item) => (
+              <a
+                class:list={["admin-nav-link", { "is-active": item.key === section }]}
+                href={`/admin/${item.key}`}
+                data-nav-section={item.key}
+                aria-current={item.key === section ? "page" : undefined}
+              >
+                <span>{item.label}</span>
+                <span class="admin-nav-dot" aria-hidden="true" />
+              </a>
+            ))
+          }
+        </nav>
+
+        <div class="admin-sidebar-foot">
+          <a class="admin-sidebar-link" href="/" target="_blank" rel="noreferrer">
+            Открыть сайт ↗
+          </a>
+
+          <!-- A form, not a link: logging out changes state, and a GET link
+               would fire from any image tag on another site. -->
+          <form method="POST" action="/admin/logout">
+            <button type="submit" class="admin-sidebar-link admin-logout">Выйти</button>
+          </form>
+        </div>
+      </aside>
+
+      <div class="admin-main-col">
+        <header class="admin-topbar">
+          <div class="admin-topbar-text">
+            <h1 class="admin-title">{active ? active.label : title}</h1>
+            {active?.hint && <p class="admin-hint">{active.hint}</p>}
+          </div>
+
+          <div class="admin-actions">
+            <button type="button" class="admin-btn admin-btn-ghost" data-admin-reset>
+              Отменить изменения
+            </button>
+            <button type="button" class="admin-btn admin-btn-primary" data-admin-publish>
+              Выгрузить content.json
+            </button>
+          </div>
+        </header>
+
+        <p class="admin-status" data-admin-status aria-live="polite"></p>
+
+        <main class="admin-main" id="admin-main">
+          <slot />
+        </main>
+      </div>
+    </div>
+
+    <script type="application/json" data-admin-payload set:html={payload}></script>
+
+    <script>
+      // @ts-nocheck — project is plain JS
+      import { mountAdmin } from "../scripts/admin-app.js";
+
+      const root = document.getElementById("admin-root");
+
+      if (root) {
+        const payload = JSON.parse(document.querySelector("[data-admin-payload]").textContent);
+
+        mountAdmin({
+          root,
+          sectionKey: root.dataset.section,
+          schema: payload.sections,
+          baseline: payload.baseline,
+          imageChoices: payload.imageChoices,
+        });
+      }
+    </script>
+  </body>
+</html>

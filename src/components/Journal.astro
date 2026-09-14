@@ -1,38 +1,11 @@
 ---
 import { Image } from "astro:assets";
-import gallery1 from "../assets/images/gallery-1.png";
-import gallery2 from "../assets/images/gallery-2.png";
-import gallery3 from "../assets/images/gallery-3.png";
+import { content, image } from "../lib/content.js";
 
 const ctaArrow = "M 0 8 L 16 8 M 16 8 L 10 0 M 16 8 L 10 16";
 const linkArrowPaths = ["M 12 6 L 7 12", "M 0 6 L 12 6 L 7 0"];
 
-const articles = [
-  {
-    index: "01",
-    title: "Your first padel tournament: what to expect",
-    excerpt:
-      "Everything you need to know before stepping onto the court for your first competitive event.",
-    image: gallery2,
-    alt: "Player returning a shot during a competitive match",
-  },
-  {
-    index: "02",
-    title: "Mexicano vs Americano: what's the difference?",
-    excerpt:
-      "Two popular tournament formats, two different experiences. Find out which one is right for you.",
-    image: gallery3,
-    alt: "Four players meeting at the net between games",
-  },
-  {
-    index: "03",
-    title: "How to improve your padel game faster",
-    excerpt:
-      "Why simply playing more isn't always enough — and what to focus on if you want to progress.",
-    image: gallery1,
-    alt: "Player driving a backhand during training",
-  },
-];
+const articles = content.journal;
 ---
 
 <section class="journal" id="journal">
@@ -76,7 +49,7 @@ const articles = [
 
               <div class="article-photo">
                 <Image
-                  src={article.image}
+                  src={image(article.image)}
                   alt={article.alt}
                   widths={[342, 460, 920]}
                   sizes="(max-width: 1023px) calc(100vw - 3rem), 460px"
@@ -88,7 +61,7 @@ const articles = [
               <h3 class="article-title display">{article.title}</h3>
               <p class="article-excerpt">{article.excerpt}</p>
 
-              <a class="article-link" href="#journal">
+              <a class="article-link" href={article.url}>
                 <span>Read article</span>
                 <svg
                   viewBox="0 0 12 12"

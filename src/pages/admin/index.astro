@@ -1,0 +1,48 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+
+/* Rendered per request so the session guard in src/middleware.js actually
+   runs — a prerendered page is public by definition. */
+export const prerender = false;
+import { sections } from "../../data/schema.js";
+import { content } from "../../lib/content.js";
+
+/* A rough "how much is in here" number per section, so the dashboard says
+   something useful rather than just repeating the nav. */
+function countFor(key) {
+  const value = content[key];
+
+  if (Array.isArray(value)) return `${value.length}`;
+  if (key === "training") return `${content.training.cards.length + content.training.packages.rows.length}`;
+  if (key === "seo") return `${Object.keys(content.seo).length}`;
+
+  return "";
+}
+---
+
+<AdminLayout title="Обзор">
+  <div class="admin-cards">
+    {
+      sections.map((section) => (
+        <a class="admin-card" href={`/admin/${section.key}`}>
+          <h2 class="admin-card-title">{section.label}</h2>
+          <p class="admin-card-hint">{section.hint}</p>
+          <span class="admin-card-count">{countFor(section.key)} записей</span>
+        </a>
+      ))
+    }
+  </div>
+
+  <div class="admin-note">
+    <h2>Как изменения попадают на сайт</h2>
+    <ol>
+      <li>Правите текст — он сохраняется автоматически в вашем браузере.</li>
+      <li>Нажимаете «Выгрузить content.json» — скачивается файл.</li>
+      <li>Файл кладётся в проект, сайт пересобирается.</li>
+    </ol>
+    <p>
+      Шаги 2–3 станут одной кнопкой «Опубликовать», когда подключим базу данных. Сейчас
+      правки живут только в этом браузере и на живой сайт сами не попадают.
+    </p>
+  </div>
+</AdminLayout>

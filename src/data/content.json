@@ -1,0 +1,152 @@
+{
+  "seo": {
+    "home": {
+      "title": "Alicante Paddle — padel tournaments, training and community",
+      "description": "Tournaments, training and a vibrant padel community in Alicante, Spain.",
+      "ogImage": "hero-court.jpg"
+    }
+  },
+  "tournaments": [
+    {
+      "id": "trn-mexicano",
+      "number": "01",
+      "title": "Mexicano",
+      "subtitle": "Different partners. More games.",
+      "description": "Dynamic matches where partners and opponents change based on the results.",
+      "meta": [
+        { "label": "Location", "value": "Alicante" },
+        { "label": "When", "value": "Wed · 19:00" },
+        { "label": "Level", "value": "Open" },
+        { "label": "Players", "value": "Up to 16" }
+      ],
+      "active": true,
+      "joinUrl": "#contact"
+    },
+    {
+      "id": "trn-americano-1100",
+      "number": "02",
+      "title": "Americano 1100",
+      "subtitle": "Competitive. Friendly. Social.",
+      "description": "Competitive matches for players with a rating up to 1100.",
+      "meta": [
+        { "label": "Location", "value": "Alicante" },
+        { "label": "When", "value": "Fri · 19:00" },
+        { "label": "Rating", "value": "Up to 1100" },
+        { "label": "Players", "value": "Up to 16" }
+      ],
+      "active": false,
+      "joinUrl": "#contact"
+    },
+    {
+      "id": "trn-americano-1100-plus",
+      "number": "03",
+      "title": "Americano 1100+",
+      "subtitle": "Higher level. Bigger challenges.",
+      "description": "Higher-intensity matches for experienced players.",
+      "meta": [
+        { "label": "Location", "value": "Alicante" },
+        { "label": "When", "value": "Sun · 11:00" },
+        { "label": "Rating", "value": "1100+" },
+        { "label": "Players", "value": "Up to 16" }
+      ],
+      "active": false,
+      "joinUrl": "#contact"
+    }
+  ],
+  "training": {
+    "cards": [
+      {
+        "id": "trc-personal",
+        "price": "€30",
+        "unit": "/ 1 hour",
+        "title": "Personal\ntraining",
+        "description": "One-on-one training focused entirely on your game. Work on technique, positioning, tactics and the areas that will make the biggest difference to your performance.",
+        "caption": "Train smarter.\nSee real progress.",
+        "buttonLabel": "Book session",
+        "buttonUrl": "#contact"
+      },
+      {
+        "id": "trc-group",
+        "price": "€40",
+        "unit": "/ session",
+        "title": "Group training",
+        "description": "Train together, improve through real game situations and put new skills into practice on court.",
+        "caption": "Better players.\nA stronger community.",
+        "buttonLabel": "Book group",
+        "buttonUrl": "#contact"
+      }
+    ],
+    "packages": {
+      "heading": "Train consistently.\nPay less.",
+      "note": "Use within 30 days. Court fee not included.",
+      "buttonLabel": "Choose package",
+      "buttonUrl": "#contact",
+      "rows": [
+        { "id": "pkg-4-personal", "label": "4 Personal", "price": "€100", "oldPrice": "€120", "save": "SAVE €20" },
+        { "id": "pkg-8-personal", "label": "8 Personal", "price": "€180", "oldPrice": "€240", "save": "SAVE €60" },
+        { "id": "pkg-4-group", "label": "4 Group", "price": "€140", "oldPrice": "€160", "save": "SAVE €20" }
+      ]
+    }
+  },
+  "events": [
+    {
+      "id": "evt-sunset-social",
+      "day": "28",
+      "month": "Sep",
+      "city": "Alicante",
+      "title": "Sunset padel social",
+      "description": "An evening of relaxed matches, music and time together with the Alicante Paddle community.",
+      "image": "event-sunset.png",
+      "imageAlt": "Padel players sitting courtside at sunset after a social match",
+      "buttonLabel": "View event",
+      "buttonUrl": "#contact",
+      "featured": true
+    }
+  ],
+  "gallery": [
+    {
+      "id": "gal-1",
+      "image": "gallery-1.png",
+      "alt": "Player driving a backhand during a match at the Alicante Paddle court"
+    },
+    {
+      "id": "gal-2",
+      "image": "gallery-2.png",
+      "alt": "Player returning a shot on the blue court under palm trees"
+    },
+    {
+      "id": "gal-3",
+      "image": "gallery-3.png",
+      "alt": "Four players shaking hands over the net after a match"
+    }
+  ],
+  "journal": [
+    {
+      "id": "art-first-tournament",
+      "index": "01",
+      "title": "Your first padel tournament: what to expect",
+      "excerpt": "Everything you need to know before stepping onto the court for your first competitive event.",
+      "image": "gallery-2.png",
+      "alt": "Player returning a shot during a competitive match",
+      "url": "#journal"
+    },
+    {
+      "id": "art-mexicano-vs-americano",
+      "index": "02",
+      "title": "Mexicano vs Americano: what's the difference?",
+      "excerpt": "Two popular tournament formats, two different experiences. Find out which one is right for you.",
+      "image": "gallery-3.png",
+      "alt": "Four players meeting at the net between games",
+      "url": "#journal"
+    },
+    {
+      "id": "art-improve-faster",
+      "index": "03",
+      "title": "How to improve your padel game faster",
+      "excerpt": "Why simply playing more isn't always enough — and what to focus on if you want to progress.",
+      "image": "gallery-1.png",
+      "alt": "Player driving a backhand during training",
+      "url": "#journal"
+    }
+  ]
+}

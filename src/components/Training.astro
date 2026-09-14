@@ -1,10 +1,14 @@
 ---
 import { Image } from "astro:assets";
-import { pricingRows } from "../data/pricing.js";
+import { content } from "../lib/content.js";
+import Multiline from "./Multiline.astro";
 import personalImg from "../assets/images/training-personal.png";
 import groupImg from "../assets/images/training-group.png";
 
 const arrowPath = "M0 8h16M16 8l-6-8M16 8l-6 8";
+
+const [personal, group] = content.training.cards;
+const packages = content.training.packages;
 ---
 
 <section class="training" id="training">
@@ -39,20 +43,17 @@ const arrowPath = "M0 8h16M16 8l-6-8M16 8l-6 8";
         <div class="card-text">
           <div class="card-price-block">
             <div class="card-price-row">
-              <span class="card-price display">€30</span>
-              <span class="card-price-unit">/ 1 hour</span>
+              <span class="card-price display">{personal.price}</span>
+              <span class="card-price-unit">{personal.unit}</span>
             </div>
             <span class="card-rule" aria-hidden="true"></span>
-            <h3 class="card-title display">Personal<br />training</h3>
-            <p class="card-description">
-              One-on-one training focused entirely on your game. Work on technique, positioning,
-              tactics and the areas that will make the biggest difference to your performance.
-            </p>
+            <h3 class="card-title display"><Multiline text={personal.title} /></h3>
+            <p class="card-description">{personal.description}</p>
           </div>
 
           <div class="card-bottom-group">
             <span class="card-rule" aria-hidden="true"></span>
-            <p class="card-caption">Train smarter.<br />See real progress.</p>
+            <p class="card-caption"><Multiline text={personal.caption} /></p>
           </div>
         </div>
 
@@ -67,8 +68,8 @@ const arrowPath = "M0 8h16M16 8l-6-8M16 8l-6 8";
           />
         </div>
 
-        <a class="btn-pill btn-pill-session" href="#contact">
-          <span>Book session</span>
+        <a class="btn-pill btn-pill-session" href={personal.buttonUrl}>
+          <span>{personal.buttonLabel}</span>
           <span class="btn-pill-icon" aria-hidden="true">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
               <path d={arrowPath}></path>
@@ -92,20 +93,17 @@ const arrowPath = "M0 8h16M16 8l-6-8M16 8l-6 8";
 
           <div class="card-text">
             <div class="card-price-row">
-              <span class="card-price display">€40</span>
-              <span class="card-price-unit">/ session</span>
+              <span class="card-price display">{group.price}</span>
+              <span class="card-price-unit">{group.unit}</span>
             </div>
             <span class="card-rule" aria-hidden="true"></span>
-            <h3 class="card-title display">Group training</h3>
-            <p class="card-description">
-              Train together, improve through real game situations and put new skills into
-              practice on court.
-            </p>
-            <p class="card-caption">Better players.<br />A stronger community.</p>
+            <h3 class="card-title display"><Multiline text={group.title} /></h3>
+            <p class="card-description">{group.description}</p>
+            <p class="card-caption"><Multiline text={group.caption} /></p>
           </div>
 
-          <a class="btn-pill btn-pill-group" href="#contact">
-            <span>Book group</span>
+          <a class="btn-pill btn-pill-group" href={group.buttonUrl}>
+            <span>{group.buttonLabel}</span>
             <span class="btn-pill-icon" aria-hidden="true">
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
                 <path d={arrowPath}></path>
@@ -115,11 +113,11 @@ const arrowPath = "M0 8h16M16 8l-6-8M16 8l-6 8";
         </article>
 
         <article class="training-card training-card-pricing" data-reveal>
-          <h3 class="card-heading display">Train consistently.<br />Pay less.</h3>
+          <h3 class="card-heading display"><Multiline text={packages.heading} /></h3>
 
           <div class="pricing-table">
             {
-              pricingRows.map((row) => (
+              packages.rows.map((row) => (
                 <div class="pricing-row">
                   <span class="pricing-label">{row.label}</span>
                   <span class="pricing-divider" aria-hidden="true" />
@@ -132,9 +130,9 @@ const arrowPath = "M0 8h16M16 8l-6-8M16 8l-6 8";
           </div>
 
           <div class="card-footer">
-            <p class="card-footer-note">Use within 30 days. Court fee not included.</p>
-            <a class="btn-pill btn-pill-dark" href="#contact">
-              <span>Choose package</span>
+            <p class="card-footer-note">{packages.note}</p>
+            <a class="btn-pill btn-pill-dark" href={packages.buttonUrl}>
+              <span>{packages.buttonLabel}</span>
               <span class="btn-pill-icon btn-pill-icon-dark" aria-hidden="true">
                 <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
                   <path d={arrowPath}></path>

@@ -1,6 +1,8 @@
 ---
-import { tournaments } from "../data/tournaments.js";
+import { content } from "../lib/content.js";
 import NumberReveal from "./NumberReveal.astro";
+
+const tournaments = content.tournaments;
 ---
 
 <section class="tournaments" id="tournaments">
@@ -9,7 +11,7 @@ import NumberReveal from "./NumberReveal.astro";
       <p class="eyebrow tournaments-label">Tournaments</p>
 
       <div class="tournaments-number-badge">
-        <NumberReveal value="03" class="tournaments-number" />
+        <NumberReveal value={String(tournaments.length).padStart(2, "0")} class="tournaments-number" />
       </div>
 
       <div class="tournaments-text-group">
@@ -59,7 +61,7 @@ import NumberReveal from "./NumberReveal.astro";
             </dl>
 
             <div class="card-action">
-              <a class:list={["btn-pill", { "btn-pill-outline": !t.active }]} href="#">
+              <a class:list={["btn-pill", { "btn-pill-outline": !t.active }]} href={t.joinUrl}>
                 <span>Join now</span>
                 <span class="btn-pill-icon" aria-hidden="true">
                   <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">

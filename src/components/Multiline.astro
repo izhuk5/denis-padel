@@ -1,0 +1,18 @@
+---
+/* The design breaks several headings and captions at a specific word. Those
+   strings live in content.json, where a raw <br> would be unescapable markup
+   in a field the site owner types into — so the break is stored as a newline
+   and turned back into a <br> here. */
+const { text } = Astro.props;
+
+const lines = String(text ?? "").split("\n");
+---
+
+{
+  lines.map((line, i) => (
+    <Fragment>
+      {i > 0 && <br />}
+      {line}
+    </Fragment>
+  ))
+}

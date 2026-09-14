@@ -1,11 +1,15 @@
 ---
 import "../styles/tokens.css";
 import robotoCondensedBlackUrl from "../assets/fonts/RobotoCondensed-Black.woff2";
+import { content, image } from "../lib/content.js";
 
-const {
-  title = "Alicante Paddle — padel tournaments, training and community",
-  description = "Tournaments, training and a vibrant padel community in Alicante, Spain.",
-} = Astro.props;
+/* Defaults come from the SEO section of the admin panel. A page can still
+   override them by passing its own props. */
+const seo = content.seo.home;
+
+const { title = seo.title, description = seo.description, ogImage = seo.ogImage } = Astro.props;
+
+const ogImageUrl = ogImage ? new URL(image(ogImage).src, Astro.site ?? Astro.url).href : null;
 ---
 
 <!doctype html>
@@ -16,6 +20,12 @@ const {
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+    <meta name="twitter:card" content={ogImageUrl ? "summary_large_image" : "summary"} />
 
     <!-- Archivo and Roboto Condensed are self-hosted via @font-face in
          tokens.css — the logo (the only Archivo Black user) is now an svg,

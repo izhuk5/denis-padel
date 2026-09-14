@@ -1,0 +1,11 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+
+/* Rendered per request so the session guard in src/middleware.js actually
+   runs — a prerendered page is public by definition. */
+export const prerender = false;
+---
+
+<AdminLayout section="events" title="events">
+  <div id="admin-root" data-section="events"></div>
+</AdminLayout>
