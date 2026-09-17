@@ -1,6 +1,8 @@
 ---
 import { Image } from "astro:assets";
-import { content, image } from "../lib/content.js";
+import { getSiteContent } from "../lib/content.js";
+
+const content = await getSiteContent();
 
 const ctaArrow = "M 0 8 L 16 8 M 16 8 L 10 0 M 16 8 L 10 16";
 const linkArrowPaths = ["M 12 6 L 7 12", "M 0 6 L 12 6 L 7 0"];
@@ -49,7 +51,9 @@ const articles = content.journal;
 
               <div class="article-photo">
                 <Image
-                  src={image(article.image)}
+                  src={article.image.src}
+                  width={article.image.width}
+                  height={article.image.height}
                   alt={article.alt}
                   widths={[342, 460, 920]}
                   sizes="(max-width: 1023px) calc(100vw - 3rem), 460px"

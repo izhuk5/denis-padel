@@ -813,3 +813,127 @@
     justify-self: end;
   }
 }
+
+/* --- save status --- */
+
+.admin-status.is-saving {
+  color: var(--ad-muted);
+}
+
+.admin-status.is-ok {
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.admin-status.is-warn {
+  background: var(--ad-warn-soft);
+  color: var(--ad-warn);
+}
+
+.admin-status.is-error {
+  background: #fef2f2;
+  color: var(--ad-danger);
+}
+
+.admin-btn:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.admin-error {
+  max-width: 72ch;
+  padding: 16px 18px;
+  border: 1px solid #fecaca;
+  border-radius: var(--ad-radius);
+  background: #fef2f2;
+  color: var(--ad-danger);
+  font-size: 14px;
+}
+
+.admin-error h2 {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+
+.admin-error p {
+  margin: 0;
+}
+
+/* --- draft badge --- */
+
+.af-badge-muted {
+  background: #eef0f4;
+  color: var(--ad-muted);
+}
+
+/* --- select --- */
+
+select.af-input {
+  appearance: none;
+  padding-right: 32px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%236b7280' stroke-width='1.6'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 10px center;
+  background-repeat: no-repeat;
+  background-size: 14px;
+  cursor: pointer;
+}
+
+/* --- image upload --- */
+
+.af-upload {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.af-upload-preview {
+  display: grid;
+  width: 132px;
+  height: 92px;
+  flex: none;
+  place-items: center;
+  border: 1px dashed #c8cdd6;
+  border-radius: 8px;
+  background: #fbfbfc;
+  overflow: hidden;
+}
+
+.af-upload-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.af-upload-empty {
+  color: var(--ad-muted);
+  font-size: 12px;
+}
+
+.af-upload-actions {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.af-upload-input {
+  display: none;
+}
+
+.af-danger-text:hover {
+  border-color: #fecaca;
+  color: var(--ad-danger);
+}
+
+@media (max-width: 900px) {
+  .af-upload {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .af-upload-preview {
+    width: 100%;
+    height: 160px;
+  }
+}

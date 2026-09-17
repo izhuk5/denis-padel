@@ -1,6 +1,8 @@
 ---
 import { Image } from "astro:assets";
-import { content, image } from "../lib/content.js";
+import { getSiteContent } from "../lib/content.js";
+
+const content = await getSiteContent();
 
 /* Figma draws the two arrows as explicit vector paths rather than mirroring
    one — the head sits on the opposite end, so they are not symmetrical. */
@@ -8,7 +10,7 @@ const prevPaths = ["M 0 8 L 6 16", "M 16 8 L 0 8 L 6 0"];
 const nextPaths = ["M 16 8 L 10 16", "M 0 8 L 16 8 L 10 0"];
 
 const photos = content.gallery.map((photo) => ({
-  src: image(photo.image),
+  image: photo.image,
   alt: photo.alt,
 }));
 
@@ -48,7 +50,9 @@ const slides = [...photos, ...photos].map((photo, i) => ({
           slides.map((slide) => (
             <figure class="swiper-slide gallery-slide" aria-hidden={slide.duplicate ? "true" : undefined}>
               <Image
-                src={slide.src}
+                src={slide.image.src}
+                width={slide.image.width}
+                height={slide.image.height}
                 alt={slide.duplicate ? "" : slide.alt}
                 widths={[342, 421, 842]}
                 sizes="(max-width: 767px) calc(100vw - 3rem), (max-width: 1023px) 50vw, 421px"

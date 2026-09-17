@@ -1,12 +1,13 @@
 ---
 import { Image } from "astro:assets";
-import { content } from "../lib/content.js";
+import { getSiteContent } from "../lib/content.js";
 import Multiline from "./Multiline.astro";
 import personalImg from "../assets/images/training-personal.png";
 import groupImg from "../assets/images/training-group.png";
 
 const arrowPath = "M0 8h16M16 8l-6-8M16 8l-6 8";
 
+const content = await getSiteContent();
 const [personal, group] = content.training.cards;
 const packages = content.training.packages;
 ---

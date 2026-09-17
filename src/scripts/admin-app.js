@@ -1,19 +1,13 @@
 // @ts-nocheck — project is plain JS
 
-/* One renderer drives every admin section. It walks the schema in
-   src/data/schema.js and builds the list, the forms and the validation from
-   it, so a new field is a schema entry and nothing else. */
+/* One renderer drives every admin page. It walks the groups in
+   src/data/schema.js and builds lists, forms and validation from them, so a
+   new field is a schema entry and nothing else.
 
-import {
-  initStore,
-  load,
-  save,
-  discardDraft,
-  hasUnpublishedChanges,
-  changedSections,
-  publish,
-  makeId,
-} from "./admin-store.js";
+   Edits save to Supabase automatically, per item, shortly after typing
+   stops. "Опубликовать" then rebuilds the public site from the database. */
+
+import { saveItem, removeItem, reorderGroup, uploadImage, publishSite } from "./admin-store.js";
 
 /* ---------- tiny DOM helpers ---------- */
 
@@ -59,29 +53,121 @@ const ICONS = {
   plus: "M8 3v10M3 8h10",
 };
 
+const isUuid = (value) => /^[0-9a-f-]{36}$/i.test(String(value));
+
 /* ---------- state ---------- */
 
-let state = {
-  data: null,
+const state = {
   section: null,
-  imageChoices: [],
-  root: null,
+  data: {},
   open: new Set(),
+  pending: new Map(), // item key -> timeout
+  inFlight: 0,
+  lastError: null,
 };
 
-let saveTimer = null;
+/* ---------- status bar ---------- */
 
-function commit() {
-  clearTimeout(saveTimer);
-  /* Debounced so typing does not hit localStorage on every keystroke. */
-  saveTimer = setTimeout(() => save(state.data), 250);
-  renderStatus();
+function setStatus(kind, message) {
+  const bar = document.querySelector("[data-admin-status]");
+  if (!bar) return;
+
+  bar.textContent = message;
+  bar.className = `admin-status is-${kind}`;
+}
+
+function refreshStatus() {
+  if (state.lastError) {
+    setStatus("error", `Не сохранено: ${state.lastError}`);
+  } else if (state.pending.size || state.inFlight) {
+    setStatus("saving", "Сохранение…");
+  } else {
+    setStatus("ok", "Все изменения сохранены. На сайте они появятся после «Опубликовать».");
+  }
+}
+
+/* ---------- validation ---------- */
+
+function isEmpty(field, value) {
+  if (field.type === "money") return value === "" || value === null || Number.isNaN(Number(value));
+  if (field.type === "image") return !value;
+  if (field.type === "select") return !value;
+  return !String(value ?? "").trim();
+}
+
+function missingFields(group, item) {
+  return group.fields.filter((field) => field.required && isEmpty(field, item[field.key]));
+}
+
+/* ---------- saving ---------- */
+
+function itemKey(group, item) {
+  return `${group.key}:${item.id ?? "singleton"}`;
+}
+
+function scheduleSave(group, item, { immediate = false } = {}) {
+  const key = itemKey(group, item);
+  clearTimeout(state.pending.get(key));
+
+  const missing = missingFields(group, item);
+  if (missing.length) {
+    state.pending.delete(key);
+    setStatus("warn", `Заполните: ${missing.map((field) => field.label).join(", ")} — до этого запись не сохранится.`);
+    return;
+  }
+
+  /* Debounced so typing a sentence is one save, not forty. */
+  state.pending.set(
+    key,
+    setTimeout(() => runSave(group, item, key), immediate ? 0 : 700),
+  );
+  refreshStatus();
+}
+
+async function runSave(group, item, key) {
+  state.pending.delete(key);
+  state.inFlight += 1;
+  refreshStatus();
+
+  const persistedId = group.kind === "object" ? null : isUuid(item.id) ? item.id : null;
+  const { id: _ignored, ...payload } = item;
+
+  try {
+    const saved = await saveItem(group.key, persistedId, payload);
+    state.lastError = null;
+
+    /* A new row just got its real id. Swap it in place so later saves
+       update this row instead of inserting another. */
+    if (group.kind === "list" && item.id !== saved.id) {
+      if (state.open.has(item.id)) {
+        state.open.delete(item.id);
+        state.open.add(saved.id);
+      }
+      item.id = saved.id;
+    }
+
+    /* Server-side side effects the form cannot know about. */
+    if (group.exclusiveFlag && item[group.exclusiveFlag]) {
+      for (const other of state.data[group.key]) {
+        if (other !== item) other[group.exclusiveFlag] = false;
+      }
+    }
+
+    if (group.key.endsWith("Categories")) refreshCategoryOptions(group.key);
+  } catch (error) {
+    state.lastError = error.message;
+  } finally {
+    state.inFlight -= 1;
+    refreshStatus();
+  }
 }
 
 /* ---------- field inputs ---------- */
 
 function fieldWrapper(field, control, value) {
-  const parts = [el("span", { class: "af-label", text: field.label })];
+  const parts = [
+    el("span", { class: "af-label", text: field.required ? `${field.label} *` : field.label }),
+  ];
 
   if (field.counter) {
     const used = String(value ?? "").length;
@@ -89,7 +175,6 @@ function fieldWrapper(field, control, value) {
       el("span", {
         class: `af-counter${used > field.counter ? " is-over" : ""}`,
         text: `${used} / ${field.counter}`,
-        dataset: { counterFor: field.key },
       }),
     );
   }
@@ -102,30 +187,33 @@ function fieldWrapper(field, control, value) {
 }
 
 function renderInput(field, value, onChange) {
-  const invalid = field.required && !String(value ?? "").trim();
+  const invalid = field.required && isEmpty(field, value);
+
+  const onInput = (event) => {
+    const raw = event.target.value;
+    const next = field.type === "money" ? (raw === "" ? "" : Number(raw)) : raw;
+
+    event.target.classList.toggle("is-invalid", Boolean(field.required && isEmpty(field, next)));
+
+    if (field.counter) {
+      const counter = event.target.closest(".af-field")?.querySelector(".af-counter");
+      if (counter) {
+        counter.textContent = `${raw.length} / ${field.counter}`;
+        counter.classList.toggle("is-over", raw.length > field.counter);
+      }
+    }
+
+    onChange(next);
+  };
+
   const shared = {
     class: `af-input${invalid ? " is-invalid" : ""}`,
     placeholder: field.placeholder ?? "",
-    oninput: (event) => {
-      const next = event.target.value;
-      event.target.classList.toggle("is-invalid", field.required && !next.trim());
-
-      if (field.counter) {
-        const counter = event.target
-          .closest(".af-field")
-          ?.querySelector(`[data-counter-for="${field.key}"]`);
-        if (counter) {
-          counter.textContent = `${next.length} / ${field.counter}`;
-          counter.classList.toggle("is-over", next.length > field.counter);
-        }
-      }
-
-      onChange(next);
-    },
+    oninput: onInput,
   };
 
   if (field.type === "textarea" || field.type === "multiline") {
-    const area = el("textarea", { ...shared, rows: field.type === "multiline" ? 2 : 3 });
+    const area = el("textarea", { ...shared, rows: field.rows ?? (field.type === "multiline" ? 2 : 3) });
     area.value = value ?? "";
     return fieldWrapper(field, area, value);
   }
@@ -145,47 +233,130 @@ function renderInput(field, value, onChange) {
     ]);
   }
 
-  if (field.type === "image") {
-    return fieldWrapper(field, renderImagePicker(value, onChange), value);
+  if (field.type === "select") {
+    const select = el("select", {
+      class: `af-input${invalid ? " is-invalid" : ""}`,
+      dataset: { optionsFrom: field.optionsFrom },
+      onchange: (event) => {
+        event.target.classList.toggle("is-invalid", Boolean(field.required && !event.target.value));
+        onChange(event.target.value);
+      },
+    });
+    fillOptions(select, field.optionsFrom, value);
+    return fieldWrapper(field, select, value);
   }
 
-  const input = el("input", { ...shared, type: field.type === "url" ? "text" : "text" });
+  if (field.type === "image") {
+    return fieldWrapper(field, renderImageField(field, value, onChange), value);
+  }
+
+  const type = { date: "date", money: "number" }[field.type] ?? "text";
+  const input = el("input", {
+    ...shared,
+    type,
+    step: field.type === "money" ? "0.01" : null,
+    min: field.type === "money" ? "0" : null,
+    inputmode: field.type === "money" ? "decimal" : null,
+  });
   input.value = value ?? "";
   return fieldWrapper(field, input, value);
 }
 
-function renderImagePicker(value, onChange) {
-  const grid = el("div", { class: "af-images" });
+function categoryName(groupKey, id) {
+  return (state.data[groupKey] ?? []).find((option) => option.id === id)?.name ?? "";
+}
 
-  for (const choice of state.imageChoices) {
-    const button = el(
-      "button",
-      {
-        type: "button",
-        class: `af-image${choice.name === value ? " is-selected" : ""}`,
-        title: choice.name,
-        onclick: () => {
-          grid.querySelectorAll(".af-image").forEach((node) => node.classList.remove("is-selected"));
-          button.classList.add("is-selected");
-          onChange(choice.name);
-        },
-      },
-      [el("img", { src: choice.src, alt: "", loading: "lazy" })],
+function fillOptions(select, groupKey, value) {
+  const options = (state.data[groupKey] ?? []).filter((option) => isUuid(option.id));
+  const current = value ?? select.value;
+
+  select.replaceChildren(
+    el("option", { value: "", text: options.length ? "— выберите —" : "Сначала создайте категорию" }),
+    ...options.map((option) => el("option", { value: option.id, text: option.name || "Без названия" })),
+  );
+  select.value = options.some((option) => option.id === current) ? current : "";
+}
+
+/* Categories are edited on the same page as the items that use them. When
+   one is renamed or added, every open dropdown picks it up without a reload —
+   and without re-rendering the forms, which would steal focus mid-typing. */
+function refreshCategoryOptions(groupKey) {
+  document.querySelectorAll(`select[data-options-from="${groupKey}"]`).forEach((select) => {
+    fillOptions(select, groupKey, select.value);
+  });
+}
+
+function renderImageField(field, value, onChange) {
+  const preview = el("div", { class: "af-upload-preview" });
+  const note = el("span", { class: "af-hint" });
+
+  const drawPreview = (image) => {
+    preview.replaceChildren(
+      image?.url
+        ? el("img", { src: image.url, alt: "", loading: "lazy" })
+        : el("span", { class: "af-upload-empty", text: "Нет изображения" }),
     );
+    removeButton.hidden = !image;
+  };
 
-    grid.append(button);
-  }
+  const fileInput = el("input", {
+    type: "file",
+    accept: "image/jpeg,image/png,image/webp,image/avif",
+    class: "af-upload-input",
+    onchange: async (event) => {
+      const file = event.target.files?.[0];
+      event.target.value = "";
+      if (!file) return;
 
-  return el("div", { class: "af-image-picker" }, [
-    grid,
-    el("p", {
-      class: "af-hint",
-      text: "Загрузка новых файлов появится вместе с базой данных. Пока — выбор из уже загруженных.",
-    }),
+      pickButton.disabled = true;
+      note.textContent = "Загрузка…";
+
+      try {
+        const uploaded = await uploadImage(field.folder, file);
+        drawPreview(uploaded);
+        note.textContent = `${uploaded.width} × ${uploaded.height}`;
+        onChange(uploaded);
+      } catch (error) {
+        note.textContent = error.message;
+      } finally {
+        pickButton.disabled = false;
+      }
+    },
+  });
+
+  const pickButton = el(
+    "button",
+    { type: "button", class: "admin-btn admin-btn-ghost", onclick: () => fileInput.click() },
+    [el("span", { text: "Загрузить фото" })],
+  );
+
+  const removeButton = el("button", {
+    type: "button",
+    class: "admin-btn admin-btn-ghost af-danger-text",
+    text: "Убрать",
+    onclick: () => {
+      drawPreview(null);
+      note.textContent = "";
+      onChange(null);
+    },
+  });
+
+  drawPreview(value);
+
+  /* A div, not the label's own control: clicking anywhere in a <label> would
+     otherwise re-open the file picker. */
+  return el("div", { class: "af-upload", onclick: (event) => event.preventDefault() }, [
+    preview,
+    el("div", { class: "af-upload-actions" }, [
+      pickButton,
+      removeButton,
+      fileInput,
+      note,
+    ]),
   ]);
 }
 
-/* Label/value pairs, e.g. the tournament meta table. */
+/* Label/value pairs, e.g. the tournament details. */
 function renderPairs(field, list, onChange) {
   const body = el("div", { class: "af-pairs" });
 
@@ -195,22 +366,14 @@ function renderPairs(field, list, onChange) {
     list.forEach((pair, i) => {
       body.append(
         el("div", { class: "af-pair" }, [
-          renderInput(
-            { key: `${field.key}-label-${i}`, label: field.pairLabels.key, type: "text", required: true },
-            pair.label,
-            (next) => {
-              pair.label = next;
-              onChange(list);
-            },
-          ),
-          renderInput(
-            { key: `${field.key}-value-${i}`, label: field.pairLabels.value, type: "text", required: true },
-            pair.value,
-            (next) => {
-              pair.value = next;
-              onChange(list);
-            },
-          ),
+          renderInput({ key: "label", label: field.pairLabels.key, type: "text", required: true }, pair.label, (next) => {
+            pair.label = next;
+            onChange(list);
+          }),
+          renderInput({ key: "value", label: field.pairLabels.value, type: "text", required: true }, pair.value, (next) => {
+            pair.value = next;
+            onChange(list);
+          }),
           el(
             "button",
             {
@@ -237,7 +400,6 @@ function renderPairs(field, list, onChange) {
           class: "af-add-row",
           onclick: () => {
             list.push({ label: "", value: "" });
-            onChange(list);
             draw();
           },
         },
@@ -248,87 +410,27 @@ function renderPairs(field, list, onChange) {
 
   draw();
 
-  return el("div", { class: "af-field af-full" }, [
-    el("span", { class: "af-label", text: field.label }),
-    body,
-  ]);
+  return el("div", { class: "af-field af-full" }, [el("span", { class: "af-label", text: field.label }), body]);
 }
 
-/* A fixed-shape table, e.g. the pricing packages. */
-function renderRows(field, list, onChange) {
-  const body = el("div", { class: "af-rows" });
-
-  const draw = () => {
-    body.replaceChildren();
-
-    list.forEach((row, i) => {
-      const cells = field.rowFields.map((rowField) =>
-        renderInput({ ...rowField, key: `${field.key}-${rowField.key}-${i}` }, row[rowField.key], (next) => {
-          row[rowField.key] = next;
-          onChange(list);
-        }),
-      );
-
-      cells.push(
-        el(
-          "button",
-          {
-            type: "button",
-            class: "af-icon-btn af-danger",
-            title: "Удалить пакет",
-            onclick: () => {
-              list.splice(i, 1);
-              onChange(list);
-              draw();
-            },
-          },
-          [icon(ICONS.trash)],
-        ),
-      );
-
-      body.append(el("div", { class: "af-row" }, cells));
-    });
-
-    body.append(
-      el(
-        "button",
-        {
-          type: "button",
-          class: "af-add-row",
-          onclick: () => {
-            const blank = { id: makeId("pkg") };
-            field.rowFields.forEach((rowField) => (blank[rowField.key] = ""));
-            list.push(blank);
-            onChange(list);
-            draw();
-          },
-        },
-        [icon(ICONS.plus), el("span", { text: "Добавить пакет" })],
-      ),
-    );
-  };
-
-  draw();
-
-  return el("div", { class: "af-field af-full" }, [
-    el("span", { class: "af-label", text: field.label }),
-    body,
-  ]);
-}
-
-function renderForm(fields, item, onChange) {
+function renderForm(group, item, onFieldChange) {
   const form = el("div", { class: "af-form" });
 
-  for (const field of fields) {
+  for (const field of group.fields) {
     if (field.type === "pairs") {
-      form.append(renderPairs(field, item[field.key] ?? [], () => onChange()));
-    } else if (field.type === "rows") {
-      form.append(renderRows(field, item[field.key] ?? [], () => onChange()));
+      item[field.key] ??= [];
+      /* A pair row with an empty half is not saved yet — the server rejects
+         it — so saves wait until every row is complete. */
+      form.append(
+        renderPairs(field, item[field.key], (list) => {
+          if (list.every((pair) => pair.label.trim() && pair.value.trim())) onFieldChange(field);
+        }),
+      );
     } else {
       form.append(
         renderInput(field, item[field.key], (next) => {
           item[field.key] = next;
-          onChange(field);
+          onFieldChange(field);
         }),
       );
     }
@@ -339,66 +441,67 @@ function renderForm(fields, item, onChange) {
 
 /* ---------- list rendering ---------- */
 
-function thumbFor(section, item) {
-  if (!section.thumbField) return null;
+function summaryFor(group, item) {
+  const title = String(item[group.titleField] ?? "").split("\n").join(" ").trim() || "Без названия";
 
-  const choice = state.imageChoices.find((image) => image.name === item[section.thumbField]);
-  return choice ? el("img", { class: "af-thumb", src: choice.src, alt: "", loading: "lazy" }) : null;
+  let subtitle = "";
+  if (group.subtitleOptionField) {
+    const option = group.fields.find((field) => field.key === group.subtitleOptionField);
+    subtitle = categoryName(option.optionsFrom, item[group.subtitleOptionField]);
+  } else if (group.subtitleField) {
+    const raw = item[group.subtitleField];
+    subtitle = raw === "" || raw == null ? "" : `${group.subtitlePrefix ?? ""}${raw}`;
+  }
+
+  return { title, subtitle };
 }
 
-function renderList(section, list, { fixed = false } = {}) {
+function renderList(group) {
+  const list = state.data[group.key];
   const wrap = el("div", { class: "af-list" });
+
+  if (group.openAll) list.forEach((item) => state.open.add(item.id));
+
+  const persistOrder = async () => {
+    const ids = list.map((item) => item.id).filter(isUuid);
+
+    state.inFlight += 1;
+    refreshStatus();
+
+    try {
+      await reorderGroup(group.key, ids);
+      state.lastError = null;
+    } catch (error) {
+      state.lastError = error.message;
+    } finally {
+      state.inFlight -= 1;
+      refreshStatus();
+    }
+  };
 
   const draw = () => {
     wrap.replaceChildren();
 
     list.forEach((item, index) => {
-      const itemId = item.id ?? `${section.key}-${index}`;
-      const isOpen = state.open.has(itemId);
-
-      const summaryText = String(item[section.titleField] ?? "").split("\n").join(" ") || "Без названия";
-      const subtitle = section.subtitleField ? String(item[section.subtitleField] ?? "") : "";
-
+      const isOpen = state.open.has(item.id);
+      const { title, subtitle } = summaryFor(group, item);
       const controls = [];
 
-      if (section.sortable) {
+      if (group.sortable) {
+        const move = (to) => (event) => {
+          event.stopPropagation();
+          list.splice(to, 0, list.splice(index, 1)[0]);
+          draw();
+          persistOrder();
+        };
+
         controls.push(
-          el(
-            "button",
-            {
-              type: "button",
-              class: "af-icon-btn",
-              title: "Выше",
-              disabled: index === 0,
-              onclick: (event) => {
-                event.stopPropagation();
-                list.splice(index - 1, 0, list.splice(index, 1)[0]);
-                commit();
-                draw();
-              },
-            },
-            [icon(ICONS.up)],
-          ),
-          el(
-            "button",
-            {
-              type: "button",
-              class: "af-icon-btn",
-              title: "Ниже",
-              disabled: index === list.length - 1,
-              onclick: (event) => {
-                event.stopPropagation();
-                list.splice(index + 1, 0, list.splice(index, 1)[0]);
-                commit();
-                draw();
-              },
-            },
-            [icon(ICONS.down)],
-          ),
+          el("button", { type: "button", class: "af-icon-btn", title: "Выше", disabled: index === 0, onclick: move(index - 1) }, [icon(ICONS.up)]),
+          el("button", { type: "button", class: "af-icon-btn", title: "Ниже", disabled: index === list.length - 1, onclick: move(index + 1) }, [icon(ICONS.down)]),
         );
       }
 
-      if (!fixed) {
+      if (!group.fixed) {
         controls.push(
           el(
             "button",
@@ -406,11 +509,25 @@ function renderList(section, list, { fixed = false } = {}) {
               type: "button",
               class: "af-icon-btn af-danger",
               title: "Удалить",
-              onclick: (event) => {
+              onclick: async (event) => {
                 event.stopPropagation();
-                if (!confirm(`Удалить «${summaryText}»? Это действие нельзя отменить.`)) return;
-                list.splice(index, 1);
-                commit();
+                if (!confirm(`Удалить «${title}»? Это действие нельзя отменить.`)) return;
+
+                clearTimeout(state.pending.get(itemKey(group, item)));
+                state.pending.delete(itemKey(group, item));
+
+                if (isUuid(item.id)) {
+                  try {
+                    await removeItem(group.key, item.id);
+                  } catch (error) {
+                    alert(error.message);
+                    return;
+                  }
+                }
+
+                list.splice(list.indexOf(item), 1);
+                if (group.key.endsWith("Categories")) refreshCategoryOptions(group.key);
+                refreshStatus();
                 draw();
               },
             },
@@ -419,6 +536,8 @@ function renderList(section, list, { fixed = false } = {}) {
         );
       }
 
+      const thumbUrl = group.thumbField ? item[group.thumbField]?.url : null;
+
       const header = el(
         "button",
         {
@@ -426,52 +545,56 @@ function renderList(section, list, { fixed = false } = {}) {
           class: "af-item-head",
           "aria-expanded": isOpen ? "true" : "false",
           onclick: () => {
-            if (state.open.has(itemId)) state.open.delete(itemId);
-            else state.open.add(itemId);
+            if (state.open.has(item.id)) state.open.delete(item.id);
+            else state.open.add(item.id);
             draw();
           },
         },
         [
-          thumbFor(section, item),
+          thumbUrl ? el("img", { class: "af-thumb", src: thumbUrl, alt: "", loading: "lazy" }) : null,
           el("span", { class: "af-item-titles" }, [
-            el("span", { class: "af-item-title", text: summaryText }),
+            el("span", { class: "af-item-title", text: title }),
             subtitle ? el("span", { class: "af-item-sub", text: subtitle }) : null,
           ]),
-          section.exclusiveFlag && item[section.exclusiveFlag]
-            ? el("span", { class: "af-badge", text: "На сайте" })
-            : null,
+          "published" in item && !item.published ? el("span", { class: "af-badge af-badge-muted", text: "Черновик" }) : null,
+          group.exclusiveFlag && item[group.exclusiveFlag] ? el("span", { class: "af-badge", text: "На сайте" }) : null,
           el("span", { class: `af-chevron${isOpen ? " is-open" : ""}` }, [icon(ICONS.down)]),
         ],
       );
 
-      const body = isOpen
-        ? renderForm(section.fields, item, (field) => {
-            /* Only one item can carry the exclusive flag, so turning it on
-               anywhere turns it off everywhere else. */
-            if (field && field.key === section.exclusiveFlag && item[section.exclusiveFlag]) {
-              list.forEach((other) => {
-                if (other !== item) other[section.exclusiveFlag] = false;
-              });
-              commit();
+      const itemEl = el("div", { class: `af-item${isOpen ? " is-open" : ""}` }, [
+        el("div", { class: "af-item-bar" }, [header, el("div", { class: "af-item-controls" }, controls)]),
+      ]);
+
+      if (isOpen) {
+        itemEl.append(
+          renderForm(group, item, (field) => {
+            const summary = summaryFor(group, item);
+            const titleNode = itemEl.querySelector(".af-item-title");
+            if (titleNode) titleNode.textContent = summary.title;
+
+            /* Flags change badges on other rows, so those need a redraw —
+               and a toggle is a click, not typing, so nothing loses focus. */
+            if (field.type === "toggle") {
+              if (field.key === group.exclusiveFlag && item[field.key]) {
+                list.forEach((other) => {
+                  if (other !== item) other[field.key] = false;
+                });
+              }
+              scheduleSave(group, item, { immediate: true });
               draw();
               return;
             }
 
-            const title = wrap.querySelectorAll(".af-item-title")[index];
-            if (title) title.textContent = String(item[section.titleField] ?? "") || "Без названия";
-            commit();
-          })
-        : null;
+            scheduleSave(group, item, { immediate: field.type === "image" || field.type === "select" });
+          }),
+        );
+      }
 
-      wrap.append(
-        el("div", { class: `af-item${isOpen ? " is-open" : ""}` }, [
-          el("div", { class: "af-item-bar" }, [header, el("div", { class: "af-item-controls" }, controls)]),
-          body,
-        ]),
-      );
+      wrap.append(itemEl);
     });
 
-    if (!fixed) {
+    if (!group.fixed) {
       wrap.append(
         el(
           "button",
@@ -479,14 +602,14 @@ function renderList(section, list, { fixed = false } = {}) {
             type: "button",
             class: "af-add",
             onclick: () => {
-              const blank = { id: makeId(section.key.slice(0, 3)) };
-              section.fields.forEach((field) => {
-                blank[field.key] =
-                  field.type === "toggle" ? false : field.type === "pairs" ? [] : "";
+              const blank = { id: `new-${Date.now().toString(36)}`, ...structuredClone(group.blank ?? {}) };
+              group.fields.forEach((field) => {
+                if (!(field.key in blank)) {
+                  blank[field.key] = field.type === "toggle" ? false : field.type === "pairs" ? [] : field.type === "image" ? null : "";
+                }
               });
               list.push(blank);
               state.open.add(blank.id);
-              commit();
               draw();
             },
           },
@@ -500,78 +623,58 @@ function renderList(section, list, { fixed = false } = {}) {
   return wrap;
 }
 
-/* ---------- status bar ---------- */
+function renderObject(group) {
+  state.data[group.key] ??= {};
+  const item = state.data[group.key];
 
-function renderStatus() {
-  const bar = document.querySelector("[data-admin-status]");
-  if (!bar) return;
-
-  const dirty = hasUnpublishedChanges(state.data);
-  bar.textContent = dirty
-    ? "Есть несохранённые на сайте изменения — нажмите «Выгрузить content.json»."
-    : "Всё совпадает с тем, что опубликовано на сайте.";
-  bar.classList.toggle("is-dirty", dirty);
-
-  document.querySelectorAll("[data-nav-section]").forEach((link) => {
-    link.classList.toggle(
-      "is-changed",
-      changedSections(state.data).includes(link.dataset.navSection),
-    );
+  return renderForm(group, item, (field) => {
+    scheduleSave(group, item, { immediate: field.type === "image" });
   });
 }
 
 /* ---------- mount ---------- */
 
-export function mountAdmin({ root, sectionKey, schema, baseline, imageChoices }) {
-  initStore(baseline);
+export function mountAdmin({ root, section, data }) {
+  state.section = section;
+  state.data = data;
 
-  state = {
-    data: load(),
-    section: schema.find((section) => section.key === sectionKey),
-    imageChoices,
-    root,
-    open: new Set(),
-  };
-
-  const section = state.section;
   const body = el("div", { class: "af-body" });
 
-  if (section.kind === "list") {
-    const list = state.data[section.key];
-    /* Nothing is expanded by default except a lone item, which would
-       otherwise need a pointless extra click. */
-    if (list.length === 1) state.open.add(list[0].id ?? `${section.key}-0`);
-    body.append(renderList(section, list));
-  } else {
-    for (const group of section.groups) {
-      const value = state.data[section.key][group.key];
+  for (const group of section.groups) {
+    const groupEl = el("section", { class: "af-group" }, [
+      group.label ? el("h2", { class: "af-group-title", text: group.label }) : null,
+    ]);
 
-      const groupEl = el("section", { class: "af-group" }, [
-        el("h2", { class: "af-group-title", text: group.label }),
-      ]);
-
-      if (group.kind === "list") {
-        value.forEach((item) => state.open.add(item.id));
-        groupEl.append(renderList({ ...group, key: `${section.key}-${group.key}` }, value, { fixed: group.fixed }));
-      } else {
-        groupEl.append(renderForm(group.fields, value, () => commit()));
-      }
-
-      body.append(groupEl);
-    }
+    groupEl.append(group.kind === "list" ? renderList(group) : renderObject(group));
+    body.append(groupEl);
   }
 
   root.replaceChildren(body);
 
-  document.querySelector("[data-admin-publish]")?.addEventListener("click", () => {
-    publish(state.data);
+  const publishButton = document.querySelector("[data-admin-publish]");
+
+  publishButton?.addEventListener("click", async () => {
+    if (state.pending.size || state.inFlight) {
+      alert("Подождите, пока сохранятся последние изменения.");
+      return;
+    }
+
+    publishButton.disabled = true;
+
+    try {
+      await publishSite();
+      setStatus("ok", "Сайт пересобирается — изменения появятся на нём через 1–2 минуты.");
+    } catch (error) {
+      setStatus("error", error.message);
+    } finally {
+      publishButton.disabled = false;
+    }
   });
 
-  document.querySelector("[data-admin-reset]")?.addEventListener("click", () => {
-    if (!confirm("Отменить все несохранённые изменения и вернуть то, что сейчас на сайте?")) return;
-    discardDraft();
-    location.reload();
+  /* Leaving with an unsent save would silently drop the last edit. */
+  window.addEventListener("beforeunload", (event) => {
+    if (state.pending.size || state.inFlight) event.preventDefault();
   });
 
-  renderStatus();
+  refreshStatus();
 }

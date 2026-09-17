@@ -1,21 +1,43 @@
 ---
 import "../styles/admin.css";
 import { sections } from "../data/schema.js";
-import { content, imageChoices } from "../lib/content.js";
+import { listGroup } from "../lib/repositories/admin.js";
 
 const { section = null, title } = Astro.props;
 
 const active = sections.find((item) => item.key === section) ?? null;
 
-/* The client bundle cannot import content.json's images directly — in a
-   browser script Vite hands back a bare URL string, not the width/height
-   metadata the picker needs. So the whole payload is serialised here, where
-   astro:assets has already resolved it, and parsed on the client. */
-const payload = JSON.stringify({
-  sections,
-  baseline: content,
-  imageChoices,
-}).replace(/</g, "\\u003c");
+/* Every group on this page is loaded server-side, through the privileged
+   client, so drafts show up here even though the public site cannot see
+   them. A failure (most likely a missing secret key) is shown on the page
+   rather than crashing it, so the owner sees what to fix. */
+let data = null;
+let loadError = null;
+
+if (active) {
+  try {
+    const entries = await Promise.all(
+      active.groups.map(async (group) => [group.key, await listGroup(group.key)]),
+    );
+    data = Object.fromEntries(entries);
+
+    /* A photo's category dropdown needs the category list even when this
+       page is not the one that edits categories. */
+    for (const group of active.groups) {
+      for (const field of group.fields) {
+        if (field.type === "select" && !(field.optionsFrom in data)) {
+          data[field.optionsFrom] = await listGroup(field.optionsFrom);
+        }
+      }
+    }
+  } catch (error) {
+    loadError = error.message;
+  }
+}
+
+/* Serialised for the client script. `<` is escaped so no string in the
+   content can close this script tag early. */
+const payload = JSON.stringify({ sectionKey: section, data }).replace(/</g, "\\u003c");
 ---
 
 <!doctype html>
@@ -48,11 +70,9 @@ const payload = JSON.stringify({
               <a
                 class:list={["admin-nav-link", { "is-active": item.key === section }]}
                 href={`/admin/${item.key}`}
-                data-nav-section={item.key}
                 aria-current={item.key === section ? "page" : undefined}
               >
                 <span>{item.label}</span>
-                <span class="admin-nav-dot" aria-hidden="true" />
               </a>
             ))
           }
@@ -79,11 +99,8 @@ const payload = JSON.stringify({
           </div>
 
           <div class="admin-actions">
-            <button type="button" class="admin-btn admin-btn-ghost" data-admin-reset>
-              Отменить изменения
-            </button>
             <button type="button" class="admin-btn admin-btn-primary" data-admin-publish>
-              Выгрузить content.json
+              Опубликовать
             </button>
           </div>
         </header>
@@ -91,7 +108,16 @@ const payload = JSON.stringify({
         <p class="admin-status" data-admin-status aria-live="polite"></p>
 
         <main class="admin-main" id="admin-main">
-          <slot />
+          {
+            loadError ? (
+              <div class="admin-error" role="alert">
+                <h2>Не удалось загрузить данные</h2>
+                <p>{loadError}</p>
+              </div>
+            ) : (
+              <slot />
+            )
+          }
         </main>
       </div>
     </div>
@@ -101,19 +127,13 @@ const payload = JSON.stringify({
     <script>
       // @ts-nocheck — project is plain JS
       import { mountAdmin } from "../scripts/admin-app.js";
+      import { sectionByKey } from "../data/schema.js";
 
       const root = document.getElementById("admin-root");
+      const payload = JSON.parse(document.querySelector("[data-admin-payload]").textContent);
 
-      if (root) {
-        const payload = JSON.parse(document.querySelector("[data-admin-payload]").textContent);
-
-        mountAdmin({
-          root,
-          sectionKey: root.dataset.section,
-          schema: payload.sections,
-          baseline: payload.baseline,
-          imageChoices: payload.imageChoices,
-        });
+      if (root && payload.data) {
+        mountAdmin({ root, section: sectionByKey(payload.sectionKey), data: payload.data });
       }
     </script>
   </body>

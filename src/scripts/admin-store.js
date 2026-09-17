@@ -1,84 +1,76 @@
 // @ts-nocheck — project is plain JS
 
-/* Mock-stage storage.
+import { actions } from "astro:actions";
 
-   The published site is static: it reads src/data/content.json at build time.
-   There is no server to POST to yet, so the admin keeps the owner's edits in
-   localStorage and hands back a content.json file to drop into the repo.
+/* The admin's only door to the server. Each call goes through an Astro Action,
+   which checks the session and validates the input before Supabase sees it.
 
-   Everything below is deliberately isolated behind load/save/publish so that
-   swapping localStorage for a real API later touches this file only. */
+   Errors are rethrown as plain Errors carrying the server's readable message,
+   so the UI can show "Старая цена должна быть больше новой" rather than a
+   status code. */
 
-const STORAGE_KEY = "alicante-admin-draft-v1";
+async function call(action, input) {
+  const { data, error } = await action(input);
 
-/* The content.json that the current build was made from. Edits are diffed
-   against it so the UI can tell the owner what is still unpublished. */
-let baseline = null;
+  if (error) {
+    /* An expired session cannot be fixed from inside the form — send the
+       owner to log in, and back to this page afterwards. */
+    if (error.code === "UNAUTHORIZED") {
+      location.href = `/admin/login?next=${encodeURIComponent(location.pathname)}`;
+    }
 
-export function initStore(baselineContent) {
-  baseline = structuredClone(baselineContent);
-}
-
-function readDraft() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    /* Private windows and cleared site data both land here. A missing draft
-       is not an error — the baseline is always a valid starting point. */
-    return null;
+    /* Input validation failures carry their issues separately; the message
+       itself is a JSON dump meant for developers, not for the owner. */
+    const readable = error.issues?.[0]?.message ?? error.message;
+    throw new Error(readable || "Не удалось выполнить действие");
   }
+
+  return data;
 }
 
-export function load() {
-  return readDraft() ?? structuredClone(baseline);
-}
+const UPLOAD_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
-export function save(content) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
-    return true;
-  } catch {
-    return false;
+export const saveItem = (group, id, item) => call(actions.save, { group, id, item });
+
+export const removeItem = (group, id) => call(actions.remove, { group, id });
+
+export const reorderGroup = (group, ids) => call(actions.reorder, { group, ids });
+
+/* Three steps, so the file itself never travels through the server — see
+   uploadStart in src/actions/index.js for why. */
+export async function uploadImage(folder, file) {
+  /* Checked here first so a wrong file fails instantly, without a round
+     trip. The server repeats both checks — this one is only for speed. */
+  if (!UPLOAD_TYPES.includes(file.type)) {
+    throw new Error("Поддерживаются JPG, PNG, WebP и AVIF.");
   }
-}
 
-export function discardDraft() {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch {
-    /* Nothing to discard if storage is unavailable. */
+  if (file.size > MAX_UPLOAD_BYTES) {
+    throw new Error("Файл больше 10 МБ.");
   }
-}
 
-export function hasUnpublishedChanges(content) {
-  return JSON.stringify(content) !== JSON.stringify(baseline);
-}
-
-/* Which top-level sections differ from the published build, so the sidebar
-   can mark them. */
-export function changedSections(content) {
-  return Object.keys(baseline).filter(
-    (key) => JSON.stringify(content[key]) !== JSON.stringify(baseline[key]),
-  );
-}
-
-export function publish(content) {
-  const blob = new Blob([JSON.stringify(content, null, 2) + "\n"], {
-    type: "application/json",
+  const { path, signedUrl } = await call(actions.uploadStart, {
+    folder,
+    contentType: file.type,
+    size: file.size,
   });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
 
-  link.href = url;
-  link.download = "content.json";
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
+  const response = await fetch(signedUrl, {
+    method: "PUT",
+    body: file,
+    headers: {
+      "content-type": file.type,
+      "cache-control": "max-age=31536000",
+      "x-upsert": "false",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Загрузка не удалась (${response.status}).`);
+  }
+
+  return call(actions.uploadFinish, { path });
 }
 
-/* ids only have to be unique inside their own list. */
-export function makeId(prefix) {
-  return `${prefix}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
-}
+export const publishSite = () => call(actions.publish, {});

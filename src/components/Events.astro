@@ -1,6 +1,8 @@
 ---
 import { Image } from "astro:assets";
-import { content, image } from "../lib/content.js";
+import { getSiteContent } from "../lib/content.js";
+
+const content = await getSiteContent();
 
 const arrowPath = "M0 8h16M16 8l-6-8M16 8l-6 8";
 
@@ -40,7 +42,9 @@ const event = content.events.find((item) => item.featured) ?? content.events[0];
 
       <div class="event-photo">
         <Image
-          src={image(event.image)}
+          src={event.image.src}
+          width={event.image.width}
+          height={event.image.height}
           alt={event.imageAlt}
           widths={[720, 1224]}
           sizes="(max-width: 1023px) 100vw, 43vw"

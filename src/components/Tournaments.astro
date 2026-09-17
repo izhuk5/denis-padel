@@ -1,7 +1,8 @@
 ---
-import { content } from "../lib/content.js";
+import { getSiteContent } from "../lib/content.js";
 import NumberReveal from "./NumberReveal.astro";
 
+const content = await getSiteContent();
 const tournaments = content.tournaments;
 ---
 
